@@ -1,0 +1,3 @@
+Optional. Persona ideas for the generator — hints, not a fixed list. Delete the file to let it decide alone.
+
+- …
