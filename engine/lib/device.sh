@@ -106,6 +106,18 @@ gallery_add() {
     -d "file:///sdcard/Pictures/$name" >/dev/null </dev/null
 }
 
+# gallery_clear — removes what gallery_add put there, so a photo from another
+# study can't steer this one. Rescanning a deleted file drops it from the picker.
+gallery_clear() {
+  local name
+  adbs shell ls /sdcard/Pictures </dev/null | tr -d '\r' | while IFS= read -r name; do
+    case "$name" in "" | .*) continue ;; esac
+    adbs shell rm -f "/sdcard/Pictures/$name" </dev/null
+    adbs shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+      -d "file:///sdcard/Pictures/$name" >/dev/null </dev/null
+  done
+}
+
 # --- per-persona device profile ----------------------------------------------
 
 # device_profile_apply <font_scale> <dark:true|false> — remembers the previous

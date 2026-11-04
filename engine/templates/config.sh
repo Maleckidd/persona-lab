@@ -28,7 +28,8 @@ reset_app() {
 # Optional: state_ready <state> <lang> — runs after the last cold restart, right
 # before the persona starts. For what a restart would lose: a share intent
 # (adbs shell am start …), or clipboard_set <file> followed by app_start.
-# gallery_add <image> adds a photo the persona "already has".
+# gallery_add <image> adds a photo the persona "already has"; gallery_clear
+# removes the ones earlier studies left.
 
 PERSONA_COUNT=5
 RUNS_PER_PERSONA=2

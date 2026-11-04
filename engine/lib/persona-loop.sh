@@ -56,8 +56,9 @@ run_persona() {
   T_PERSONA="$(jq -r 'del(.id, .start_state, .device) | to_entries | map("- **\(.key)**: \(.value | if type == "string" then . else tojson end)") | join("\n")' <<<"$persona")" \
     T_BRIEF="$(cat "$(brief_for "$lang")")" \
     T_STATE="$(state_persona_text "$state")" \
+    T_DOSSIER="$(cat "${DOSSIER_FILE:-/dev/null}" 2>/dev/null)" \
     T_LANG="$lang" T_MAX_STEPS="$max_steps" T_SHOT_W="$SHOT_WIDTH" T_SHOT_H="$SHOT_HEIGHT" \
-    render_template "$PROMPTS_DIR/persona.md" >"$sys"
+    render_template "$(prompt_file persona.md)" >"$sys"
 
   video_start "$out/video.webm"
   local started_at step=0 history="" feedback="" outcome="limit" outcome_reason="" cost=0 bad=0
@@ -157,7 +158,7 @@ Reply with one JSON object only."
   esac
   title="Raport: $name — przebieg $run_no"
   T_OUTCOME="$outcome_text" T_HISTORY="$history" T_LANG="$lang" T_TITLE="$title" \
-    render_template "$PROMPTS_DIR/report.md" >"$out/steps/report-prompt.md"
+    render_template "$(prompt_file report.md)" >"$out/steps/report-prompt.md"
   user_message "$(cat "$out/steps/report-prompt.md")" |
     isolated_claude "$MODEL_PERSONA" "$sys" "$out/steps/report.jsonl" >"$out/report.raw.md"
   cost="$(add_cost "$cost" "$(result_cost "$out/steps/report.jsonl")")"

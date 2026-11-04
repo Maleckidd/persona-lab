@@ -5,13 +5,13 @@
 
 # check_citations <report.raw.md> <shots-dir> <last-step>
 #
-# Every bullet under "Problemy" and "Życzenia i inspiracje" must cite at least
-# one screenshot that exists, as [shot-NNN]. Bullets that do not are moved to a
-# final "Odrzucone" section — kept visible, never counted. Valid citations
-# become links to the image.
+# Every bullet under the EVIDENCE_SECTIONS headings ("Problemy" and "Życzenia i
+# inspiracje" by default) must cite at least one screenshot that exists, as
+# [shot-NNN]. Bullets that do not are moved to a final "Odrzucone" section —
+# kept visible, never counted. Valid citations become links to the image.
 check_citations() {
   perl -e '
-    my ($file, $shots, $last) = @ARGV;
+    my ($file, $shots, $last, $sections) = @ARGV;
     open my $fh, "<", $file or die; my @lines = <$fh>; close $fh;
     my (@out, @rejected, $section, @bullet);
     my $flush = sub {
@@ -27,7 +27,7 @@ check_citations() {
     for my $l (@lines) {
       if ($l =~ /^#/) {
         $flush->();
-        $section = ($l =~ /^##\s*(Problemy|Problems|Życzenia|Wishes)/i) ? 1 : 0;
+        $section = ($l =~ /^##\s*($sections)/i) ? 1 : 0;
         push @out, $l; next;
       }
       if ($l =~ /^\s*[-*]\s+/) { $flush->(); push @bullet, $l; next }
@@ -42,7 +42,7 @@ check_citations() {
     }
     $md =~ s{\[shot-(\d{3})\](?!\()}{-f "$shots/shot-$1.png" ? "[shot-$1](shots/shot-$1.png)" : "[shot-$1]"}ge;
     print $md;
-  ' "$1" "$2" "$3"
+  ' "$1" "$2" "$3" "$EVIDENCE_SECTIONS"
 }
 
 # render_think_aloud <run-dir> <title> — the per-step log, one section per
