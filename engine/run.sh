@@ -6,19 +6,23 @@
 # One command, in this order:
 #   1. preflight     device connected, claude CLI present, optional build/install
 #   2. isolation     verify-isolation.sh — a persona must not be able to read the repo
-#   3. personas      generated from the public brief alone (or --personas-file)
-#   4. runs          for each persona × run: reset app → video → persona loop → report
-#   5. synthesis     one agent WITH repo access merges everything into synthesis.md
+#   3. desk research only when the config has prompts/desk-research.md: one agent
+#                    with web tools and no repo writes desk-research.md for the rest
+#   4. personas      generated from the public brief alone (or --personas-file)
+#   5. runs          for each persona × run: reset app → video → persona loop → report
+#   6. synthesis     one agent merges everything into synthesis.md; it reads the
+#                    repo, or only SYNTHESIS_SCOPE when the config sets one
 #
 # Options:
 #   --count N              personas to generate (default PERSONA_COUNT)
 #   --runs N               runs per persona (default RUNS_PER_PERSONA)
 #   --only ID[,ID]         run only these persona ids
 #   --personas-file FILE   reuse personas.json from an earlier session (no generation)
+#   --dossier-file FILE    reuse desk-research.md from an earlier session (no web research)
 #   --max-steps N          hard cap of turns per run (default MAX_STEPS)
 #   --skip-isolation       skip step 2 (not recommended)
 #   --skip-synthesis       stop after the runs
-#   --synthesize-only DIR  only re-run step 5 on an existing session directory
+#   --synthesize-only DIR  only re-run step 6 on an existing session directory
 #   --archive-only DIR     only (re)write the history entry of an existing session
 #
 # Output: <runs-dir>/<session-id>/ — see README.md.
@@ -44,6 +48,7 @@ COUNT="$PERSONA_COUNT"
 RUNS="$RUNS_PER_PERSONA"
 ONLY=""
 PERSONAS_FILE=""
+DOSSIER_REUSE=""
 SKIP_ISOLATION=0
 SKIP_SYNTHESIS=0
 SYNTH_ONLY=""
@@ -53,6 +58,7 @@ while [ $# -gt 0 ]; do
     --runs) RUNS="$2"; shift 2 ;;
     --only) ONLY="$2"; shift 2 ;;
     --personas-file) PERSONAS_FILE="$2"; shift 2 ;;
+    --dossier-file) DOSSIER_REUSE="$2"; shift 2 ;;
     --max-steps) MAX_STEPS="$2"; shift 2 ;;
     --skip-isolation) SKIP_ISOLATION=1; shift ;;
     --skip-synthesis) SKIP_SYNTHESIS=1; shift ;;
@@ -64,7 +70,7 @@ done
 
 resolve_claude
 
-# --- 5. synthesis (defined first so --synthesize-only can jump to it) ----------
+# --- 6. synthesis (defined first so --synthesize-only can jump to it) ----------
 
 calibration_filled() {
   local f="$CONFIG_DIR/calibration/real-testers.md"
@@ -86,9 +92,27 @@ Table: real-tester point | tester | caught by personas (tak/częściowo/nie) | m
   fi
   T_RUN_DIR="${session#"$APP_REPO"/}" T_RUN_LIST="$list" T_RUN_ID="$(basename "$session")" \
     T_LANG="$SYNTHESIS_LANG" T_CALIBRATION="$cal" T_CALIBRATION_SECTION="$cal_section" T_FOCUS="$SYNTHESIS_FOCUS" \
-    render_template "$PROMPTS_DIR/synthesis.md" >"$session/synthesis-prompt.md"
-  log "synthesis ($MODEL_SYNTHESIS, with repo access)…"
-  repo_claude "$MODEL_SYNTHESIS" "$MAX_BUDGET_SYNTHESIS" "$session/synthesis-prompt.md" "$session/synthesis.json" >"$session/synthesis.md"
+    render_template "$(prompt_file synthesis.md)" >"$session/synthesis-prompt.md"
+  if [ -n "${SYNTHESIS_SCOPE:-}" ]; then
+    local scope escapes leaks
+    scope="$(scope_snapshot "$session")" || die "cannot build the synthesis snapshot"
+    log "synthesis ($MODEL_SYNTHESIS, only: $SYNTHESIS_SCOPE)…"
+    scoped_claude "$MODEL_SYNTHESIS" "$MAX_BUDGET_SYNTHESIS" "$session/synthesis-prompt.md" "$session/synthesis.jsonl" "$scope" >"$session/synthesis.md"
+    jq -c 'select(.type == "result")' "$session/synthesis.jsonl" | tail -1 >"$session/synthesis.json"
+    escapes="$(scope_escapes "$session/synthesis.jsonl" "$scope")"
+    leaks="$(scope_leaks "$session/synthesis.jsonl")"
+    rm -rf "$scope"
+    {
+      printf 'Scope: %s\n' "$SYNTHESIS_SCOPE"
+      printf 'Reads attempted outside the snapshot: %s\n' "${escapes:-none}"
+      printf 'Forbidden files seen in the transcript: %s\n' "${leaks:-none}"
+    } >"$session/scope-audit.txt"
+    [ -z "$leaks" ] || die "the synthesis saw $leaks — see $session/scope-audit.txt"
+    [ -z "$escapes" ] || log "WARNING: the synthesis tried to leave its snapshot — see $session/scope-audit.txt"
+  else
+    log "synthesis ($MODEL_SYNTHESIS, with repo access)…"
+    repo_claude "$MODEL_SYNTHESIS" "$MAX_BUDGET_SYNTHESIS" "$session/synthesis-prompt.md" "$session/synthesis.json" >"$session/synthesis.md"
+  fi
   [ -s "$session/synthesis.md" ] || die "synthesis produced nothing — see $session/synthesis.json"
   log "synthesis → $session/synthesis.md"
   archive_session "$session"
@@ -126,7 +150,23 @@ if [ $SKIP_ISOLATION = 0 ]; then
   bash "$DIR/verify-isolation.sh" "$CONFIG_DIR" --out "$SESSION/isolation" || die "isolation check failed — not running personas"
 fi
 
-# --- 3. personas -------------------------------------------------------------------------
+# --- 3. desk research ---------------------------------------------------------------------
+
+DOSSIER_FILE=""
+if [ -n "$DOSSIER_REUSE" ]; then
+  DOSSIER_FILE="$SESSION/desk-research.md"
+  cp "$DOSSIER_REUSE" "$DOSSIER_FILE" || die "cannot read $DOSSIER_REUSE"
+elif [ -f "$CONFIG_DIR/prompts/desk-research.md" ]; then
+  DOSSIER_FILE="$SESSION/desk-research.md"
+  T_BRIEF="$(cat "$BRIEF_FILE")" T_DATE="$(date +%Y-%m-%d)" \
+    render_template "$CONFIG_DIR/prompts/desk-research.md" >"$SESSION/desk-research-prompt.md"
+  log "desk research ($MODEL_SYNTHESIS, web tools, no repo)…"
+  web_claude "$MODEL_SYNTHESIS" "$MAX_BUDGET_DESK_RESEARCH" "$SESSION/desk-research-prompt.md" "$SESSION/desk-research.json" >"$DOSSIER_FILE"
+  [ -s "$DOSSIER_FILE" ] || die "desk research produced nothing — see $SESSION/desk-research.json"
+  log "desk research → $DOSSIER_FILE"
+fi
+
+# --- 4. personas -------------------------------------------------------------------------
 
 if [ -n "$PERSONAS_FILE" ]; then
   cp "$PERSONAS_FILE" "$SESSION/personas.json"
@@ -144,7 +184,7 @@ $(cat "$CONFIG_DIR/personas.override.md")
   fi
   T_BRIEF="$(cat "$BRIEF_FILE")" T_COUNT="$COUNT" T_MAX_STEPS="$MAX_STEPS" \
     T_LANGUAGES="$(echo "$APP_LANGUAGES" | sed 's/ /, /g')" T_STATES="$states" T_OVERRIDES="$overrides" \
-    render_template "$PROMPTS_DIR/generator.md" >"$SESSION/generator-prompt.md"
+    render_template "$(prompt_file generator.md)" >"$SESSION/generator-prompt.md"
   printf 'You are a UX researcher. Follow the instructions in the user message exactly.\n' >"$SESSION/generator-system.md"
   log "generating $COUNT personas from the brief ($MODEL_GENERATOR, no tools)…"
   for attempt in 1 2; do
@@ -173,7 +213,7 @@ if [ -n "$ONLY" ]; then
 fi
 log "personas: $(echo $PERSONA_IDS) × $RUNS run(s)"
 
-# --- 4. runs -------------------------------------------------------------------------------
+# --- 5. runs -------------------------------------------------------------------------------
 
 for id in $PERSONA_IDS; do
   persona="$(jq -c --arg id "$id" '.personas[] | select(.id == $id)' "$SESSION/personas.json")"
@@ -186,7 +226,7 @@ jq -s '{session: $sid, app: $app, version: $ver, runs: .}' --arg sid "$SESSION_I
   "$SESSION"/*/run-*/summary.json >"$SESSION/summary.json"
 log "total cost of runs: \$$(jq '[.runs[].cost_usd] | add' "$SESSION/summary.json")"
 
-# --- 5. synthesis ---------------------------------------------------------------------------
+# --- 6. synthesis ---------------------------------------------------------------------------
 
 if [ $SKIP_SYNTHESIS = 0 ]; then
   synthesize "$SESSION"

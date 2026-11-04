@@ -40,6 +40,8 @@ load_config() {
   MODEL_SYNTHESIS="${MODEL_SYNTHESIS:-opus}"
   MAX_BUDGET_PER_CALL="${MAX_BUDGET_PER_CALL:-1.00}"
   MAX_BUDGET_SYNTHESIS="${MAX_BUDGET_SYNTHESIS:-5.00}"
+  MAX_BUDGET_DESK_RESEARCH="${MAX_BUDGET_DESK_RESEARCH:-3.00}"
+  EVIDENCE_SECTIONS="${EVIDENCE_SECTIONS:-Problemy|Problems|Życzenia|Wishes}"
   UI_HINTS="${UI_HINTS:-text}"
   SHOT_WIDTH="${SHOT_WIDTH:-540}"
   SETTLE_SECONDS="${SETTLE_SECONDS:-1.5}"
@@ -56,6 +58,12 @@ load_config() {
   if grep -q 'PERSONA-LAB-TEMPLATE' "$BRIEF_FILE"; then
     die "$BRIEF_FILE is still the template — write the brief first"
   fi
+}
+
+# prompt_file <name> — the config's prompts/<name> when it has one (a study of
+# another kind: other instructions, other report), else the engine's.
+prompt_file() {
+  if [ -f "$CONFIG_DIR/prompts/$1" ]; then echo "$CONFIG_DIR/prompts/$1"; else echo "$PROMPTS_DIR/$1"; fi
 }
 
 # brief_for <lang> — brief.<lang>.md when the config has one (a persona reads
@@ -153,6 +161,87 @@ repo_claude() {
         --model "$model" --max-budget-usd "$budget" <"$prompt"
   ) >"$out" 2>"$out.stderr"
   local rc=$?
+  [ -s "$out.stderr" ] || rm -f "$out.stderr"
+  jq -r '.result // empty' "$out" 2>/dev/null
+  return $rc
+}
+
+# scope_snapshot <session> — prints a new directory outside the repository with
+# only what the config lists in SYNTHESIS_SCOPE plus this session, at the same
+# relative paths, so that links in the report still resolve from the repo root.
+# The config's scope_scrub <dir> runs before the session is copied in.
+scope_snapshot() {
+  local session="$1" dir rel
+  dir="$(mktemp -d "${TMPDIR:-/tmp}/persona-scope.XXXXXX")" || return 1
+  dir="$(cd "$dir" && pwd -P)"
+  for rel in $SYNTHESIS_SCOPE; do
+    mkdir -p "$dir/$(dirname "$rel")"
+    cp -R "$APP_REPO/$rel" "$dir/$rel" || return 1
+  done
+  if declare -F scope_scrub >/dev/null; then
+    scope_scrub "$dir" || return 1
+  fi
+  rel="${session#"$APP_REPO"/}"
+  mkdir -p "$dir/$rel"
+  rsync -a --exclude '*.mp4' --exclude '*.jsonl' --exclude 'synthesis*' --exclude 'isolation' "$session/" "$dir/$rel/" || return 1
+  echo "$dir"
+}
+
+# scoped_claude <model> <budget> <prompt-file> <out.jsonl> <scope-dir> — the
+# synthesis agent of a study that must not see the repository. Runs inside the
+# snapshot with no settings and no pre-approved tools, so reads outside it are
+# refused and no project instructions load. Prints the result text.
+scoped_claude() {
+  local model="$1" budget="$2" prompt="$3" out="$4" scope="$5" rc
+  (
+    cd "$scope" &&
+      env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p \
+        --output-format stream-json --verbose \
+        --tools "Read,Grep,Glob" \
+        --strict-mcp-config --setting-sources "" --no-session-persistence \
+        --model "$model" --max-budget-usd "$budget" <"$prompt"
+  ) >"$out" 2>"$out.stderr"
+  rc=$?
+  [ -s "$out.stderr" ] || rm -f "$out.stderr"
+  result_text "$out"
+  return $rc
+}
+
+# scope_escapes <transcript.jsonl> <scope-dir> — prints every absolute path the
+# agent tried to reach outside the snapshot.
+scope_escapes() {
+  jq -r 'select(.type == "assistant") | .message.content[]? | select(.type == "tool_use") |
+    .input | (.file_path // .path // empty)' "$1" 2>/dev/null |
+    grep '^/' | grep -v "^$2" | sort -u
+}
+
+# scope_leaks <file> — prints each SCOPE_FORBIDDEN file whose longest line shows
+# up in <file>. Compared as letters and digits only: a transcript escapes quotes.
+scope_leaks() {
+  local f line text
+  text="$(LC_ALL=C tr -cd 'a-zA-Z0-9' <"$1")"
+  for f in ${SCOPE_FORBIDDEN:-}; do
+    line="$(awk 'length > n { n = length; l = $0 } END { print l }' "$APP_REPO/$f" | LC_ALL=C tr -cd 'a-zA-Z0-9')"
+    case "$text" in *"$line"*) [ -z "$line" ] || echo "$f" ;; esac
+  done
+}
+
+# web_claude <model> <budget> <prompt-file> <out.json> — the desk researcher.
+# Web tools only, in an empty directory outside the repository: it can look at
+# the world, not at the code. Its answer reaches the personas as plain text.
+web_claude() {
+  local model="$1" budget="$2" prompt="$3" out="$4" sandbox rc
+  sandbox="$(mktemp -d "${TMPDIR:-/tmp}/persona-web.XXXXXX")"
+  (
+    cd "$sandbox" &&
+      env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p \
+        --output-format json \
+        --tools "WebSearch,WebFetch" --allowedTools "WebSearch" "WebFetch" \
+        --strict-mcp-config --setting-sources "" --no-session-persistence \
+        --model "$model" --max-budget-usd "$budget" <"$prompt"
+  ) >"$out" 2>"$out.stderr"
+  rc=$?
+  rmdir "$sandbox" 2>/dev/null
   [ -s "$out.stderr" ] || rm -f "$out.stderr"
   jq -r '.result // empty' "$out" 2>/dev/null
   return $rc
