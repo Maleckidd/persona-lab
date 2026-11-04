@@ -48,6 +48,64 @@ app_wait_ready() {
   return 1
 }
 
+# --- what the person already has on their phone --------------------------------
+
+# clipboard_set <text-file> — puts the file's text on the device clipboard, for
+# a persona who "has just copied" something. Emulator only.
+#
+# Android has no shell command for this, and `adb reverse` has crashed the adb
+# server here, so Chrome does the copy: it loads a one-button page from a
+# throw-away server on the host (10.0.2.2 is the host's loopback, as seen from
+# the emulator) and the engine taps the button. Full Unicode survives, which
+# `input text` can't do. Leaves Chrome stopped: the caller brings its app back.
+clipboard_set() {
+  local file="$1" dir pid i ok=1
+  is_emulator || { log "clipboard_set needs an emulator"; return 1; }
+  dir="$(mktemp -d "${TMPDIR:-/tmp}/persona-clip.XXXXXX")"
+  {
+    printf '%s' '<!doctype html><meta charset=utf-8><meta name=viewport content="width=device-width,initial-scale=1"><body style="margin:0"><textarea id=t style="position:absolute;opacity:0">'
+    perl -pe 's/&/&amp;/g; s/</&lt;/g; s/>/&gt;/g' "$file"
+    printf '%s' "</textarea><button style=\"width:100vw;height:100vh;font-size:40px\" onclick=\"t.select();document.execCommand('copy');this.textContent='COPIED'\">copy</button>"
+  } >"$dir/clip.html"
+  (cd "$dir" && exec python3 -m http.server 8765 --bind 127.0.0.1) >/dev/null 2>&1 &
+  pid=$!
+  sleep 1
+  # The first-run screens and the notification prompt would swallow the tap.
+  adbs shell am set-debug-app --persistent com.android.chrome </dev/null
+  adbs shell 'echo "_ --disable-fre --no-first-run --no-default-browser-check" > /data/local/tmp/chrome-command-line' </dev/null
+  adbs shell pm grant com.android.chrome android.permission.POST_NOTIFICATIONS </dev/null 2>/dev/null
+  adbs shell am force-stop com.android.chrome </dev/null
+  adbs shell am start -a android.intent.action.VIEW -d http://10.0.2.2:8765/clip.html \
+    -n com.android.chrome/com.google.android.apps.chrome.Main >/dev/null 2>&1 </dev/null
+  sleep 6
+  # A tap can land on Chrome's own snackbar, so tap until the page says it copied.
+  for i in 1 2 3 4 5 6; do
+    adbs shell input tap "$((DEV_W / 2))" "$((DEV_H / 2))" </dev/null
+    sleep 1.5
+    if ui_raw | grep -q 'COPIED'; then
+      ok=0
+      break
+    fi
+  done
+  kill "$pid" 2>/dev/null
+  wait "$pid" 2>/dev/null
+  rm -rf "$dir"
+  adbs shell am force-stop com.android.chrome </dev/null
+  [ $ok = 0 ] || log "clipboard_set: the page never confirmed the copy"
+  return $ok
+}
+
+# gallery_add <image-file> — the image shows up in the phone's gallery and the
+# system photo picker, newest first. Re-adding the same name refreshes it.
+gallery_add() {
+  local name
+  name="$(basename "$1")"
+  adbs push "$1" "/sdcard/Pictures/$name" >/dev/null </dev/null || return 1
+  adbs shell touch "/sdcard/Pictures/$name" </dev/null
+  adbs shell am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE \
+    -d "file:///sdcard/Pictures/$name" >/dev/null </dev/null
+}
+
 # --- per-persona device profile ----------------------------------------------
 
 # device_profile_apply <font_scale> <dark:true|false> — remembers the previous

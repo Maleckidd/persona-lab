@@ -15,6 +15,7 @@ Do this:
 4. Map each issue to concrete screens and components in the code (file paths, with line numbers where useful). Check the code before claiming a cause; if you cannot find it, say so.
 5. Separate usability problems from wishes/ideas. Note which wishes are explicitly out of scope per the project's spec (if the repository has one) — list them, do not drop them silently.
 {{CALIBRATION}}
+{{FOCUS}}
 
 Write the result in language: {{LANG}}. Output ONLY the Markdown document, with this structure:
 

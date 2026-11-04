@@ -85,7 +85,7 @@ synthesize() {
 Table: real-tester point | tester | caught by personas (tak/częściowo/nie) | matching finding. Then recall, then the persona-only findings, then 2–3 sentences on what the personas systematically miss or over-report."
   fi
   T_RUN_DIR="${session#"$APP_REPO"/}" T_RUN_LIST="$list" T_RUN_ID="$(basename "$session")" \
-    T_LANG="$SYNTHESIS_LANG" T_CALIBRATION="$cal" T_CALIBRATION_SECTION="$cal_section" \
+    T_LANG="$SYNTHESIS_LANG" T_CALIBRATION="$cal" T_CALIBRATION_SECTION="$cal_section" T_FOCUS="$SYNTHESIS_FOCUS" \
     render_template "$PROMPTS_DIR/synthesis.md" >"$session/synthesis-prompt.md"
   log "synthesis ($MODEL_SYNTHESIS, with repo access)…"
   repo_claude "$MODEL_SYNTHESIS" "$MAX_BUDGET_SYNTHESIS" "$session/synthesis-prompt.md" "$session/synthesis.json" >"$session/synthesis.md"

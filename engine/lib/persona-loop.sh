@@ -37,8 +37,11 @@ run_persona() {
   # A failed reset loses this run, not the session: the rest still runs and
   # the skipped one is visible in summary.json.
   trap 'video_stop; device_profile_restore' INT TERM
+  # An optional state_ready hook runs last, on the final app process: anything
+  # a cold restart would wipe (a share intent) or that goes stale (the clipboard).
   if ! (reset_app "$state" "$lang") || ! app_wait_ready 90 ||
-    ! device_profile_apply "$font" "$dark" || ! app_stop || ! app_start || ! app_wait_ready 90; then
+    ! device_profile_apply "$font" "$dark" || ! app_stop || ! app_start || ! app_wait_ready 90 ||
+    { declare -F state_ready >/dev/null && ! (state_ready "$state" "$lang"); }; then
     log "WARNING: could not put the app into state '$state' ($lang) — skipping $id run $run_no"
     trap - INT TERM
     device_profile_restore

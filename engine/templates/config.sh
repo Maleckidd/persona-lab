@@ -25,6 +25,11 @@ reset_app() {
   esac
 }
 
+# Optional: state_ready <state> <lang> — runs after the last cold restart, right
+# before the persona starts. For what a restart would lose: a share intent
+# (adbs shell am start …), or clipboard_set <file> followed by app_start.
+# gallery_add <image> adds a photo the persona "already has".
+
 PERSONA_COUNT=5
 RUNS_PER_PERSONA=2
 MAX_STEPS=40
@@ -35,6 +40,7 @@ MAX_BUDGET_PER_CALL=1.00
 MAX_BUDGET_SYNTHESIS=5.00
 UI_HINTS=text                # none | text | full
 SYNTHESIS_LANG=en
+SYNTHESIS_FOCUS=""           # extra instruction for a study aimed at one feature
 
 # Phrases that exist only in the repo's code/docs (class names, internal terms).
 ISOLATION_SENTINELS=""
