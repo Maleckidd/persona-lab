@@ -50,13 +50,4 @@ Reply with ONE JSON object and nothing else:
 }
 
 `action` is exactly one of:
-- {"type": "tap", "x": 120, "y": 560}
-- {"type": "long_press", "x": 120, "y": 560}
-- {"type": "swipe", "x1": 270, "y1": 900, "x2": 270, "y2": 300}
-- {"type": "scroll", "direction": "down"}   (or "up")
-- {"type": "type", "text": "text to type into the field that has focus"}
-- {"type": "back"}     (the phone's system Back)
-- {"type": "enter"}    (Enter on the keyboard)
-- {"type": "wait"}     (wait for the screen to change)
-- {"type": "done", "reason": "..."}     (you have dealt with all your needs, successfully or not, and stop using the app)
-- {"type": "give_up", "reason": "..."}  (you have had enough and close the app)
+{{ACTIONS}}

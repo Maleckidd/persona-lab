@@ -1,0 +1,11 @@
+{
+  "build": "PERSONA-LAB-TEMPLATE — which build this is: branch or patch, commit, date",
+  "defects": [
+    {
+      "id": "S1",
+      "screen": "where the defect is, in the user's terms (e.g. the form for a new item)",
+      "defect": "what was changed on purpose (e.g. the Save button shows an icon without a label)",
+      "symptom": "what a user would run into (e.g. cannot tell how to save, taps Back and loses the entry)"
+    }
+  ]
+}

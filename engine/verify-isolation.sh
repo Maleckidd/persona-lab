@@ -56,7 +56,7 @@ trap 'rm -f "$CANARY"' EXIT
 
 # A real persona system prompt, so the probe runs under the runner's exact setup.
 T_PERSONA="- **name**: Isolation probe" T_BRIEF="$(cat "$BRIEF_FILE")" T_STATE="(probe)" T_DOSSIER="(probe)" T_LANG=en \
-  T_MAX_STEPS=1 T_SHOT_W="${SHOT_WIDTH}" T_SHOT_H=0 \
+  T_MAX_STEPS=1 T_SHOT_W="${SHOT_WIDTH}" T_SHOT_H=0 T_ACTIONS='- {"type": "done", "reason": "..."}' \
   render_template "$(prompt_file persona.md)" >"$OUT/system-prompt.md"
 T_CANARY_FILE="$CANARY" T_REPO="$APP_REPO" render_template "$PROMPTS_DIR/isolation-probe.md" >"$OUT/probe.md"
 

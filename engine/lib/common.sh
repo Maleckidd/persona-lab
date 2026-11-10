@@ -45,6 +45,21 @@ load_config() {
   UI_HINTS="${UI_HINTS:-text}"
   SHOT_WIDTH="${SHOT_WIDTH:-540}"
   SETTLE_SECONDS="${SETTLE_SECONDS:-1.5}"
+  # Outcome check: a model call per run that compares the persona's needs
+  # with the end state read by the config's capture_state hook (verify.sh).
+  JUDGE_OUTCOME="${JUDGE_OUTCOME:-1}"
+  MODEL_JUDGE="${MODEL_JUDGE:-$MODEL_PERSONA}"
+  MODEL_SCORER="${MODEL_SCORER:-$MODEL_SYNTHESIS}"
+  STATE_MAX_CHARS="${STATE_MAX_CHARS:-24000}"
+  CAPTURE_SETTLE_SECONDS="${CAPTURE_SETTLE_SECONDS:-6}"
+  # Rig incidents: a turn slower than STALL_SECONDS means the host slept or a
+  # call hung; turns starting within POST_STALL_SECONDS after it are suspect.
+  STALL_SECONDS="${STALL_SECONDS:-180}"
+  POST_STALL_SECONDS="${POST_STALL_SECONDS:-180}"
+  POST_STALL_WAIT="${POST_STALL_WAIT:-30}"
+  # The setup before the first turn (reset, reading the state) may take this
+  # much longer than a turn before it counts as a stall.
+  RESET_ALLOW_SECONDS="${RESET_ALLOW_SECONDS:-600}"
   SYNTHESIS_LANG="${SYNTHESIS_LANG:-pl}"
   SYNTHESIS_FOCUS="${SYNTHESIS_FOCUS:-}"
   RUNS_DIR="${RUNS_DIR:-$CONFIG_DIR/../runs}"

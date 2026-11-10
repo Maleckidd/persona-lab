@@ -192,6 +192,56 @@ ui_hints() {
     }' "$SCALE" "$UI_HINTS"
 }
 
+# --- reading the end state (for a config's capture_state hook) -------------------
+#
+# These are for the study owner's hooks, never for a persona: they expose
+# accessibility labels and clickability, and work in device pixels.
+
+# ui_nodes — one line per node that has a text or a label, in document order:
+#   clickable(0|1) <TAB> x1 <TAB> y1 <TAB> x2 <TAB> y2 <TAB> text <TAB> label
+ui_nodes() {
+  ui_raw | perl -CS -Mutf8 -ne '
+    while (/<node\b([^>]*)>/g) {
+      my $a = $1;
+      my ($t) = $a =~ /\btext="([^"]*)"/;
+      my ($d) = $a =~ /\bcontent-desc="([^"]*)"/;
+      my ($c) = $a =~ /\bclickable="([^"]*)"/;
+      my ($x1, $y1, $x2, $y2) = $a =~ /\bbounds="\[(\d+),(\d+)\]\[(\d+),(\d+)\]"/;
+      next unless defined $x1 && $x2 > $x1 && $y2 > $y1;
+      for ($t, $d) { $_ = "" unless defined; s/&quot;/"/g; s/&apos;/\x27/g; s/&lt;/</g; s/&gt;/>/g; s/&#10;/ /g; s/&amp;/&/g; s/\p{Co}//g; s/\s+/ /g; s/^ | $//g }
+      next if $t eq "" && $d eq "";
+      print join("\t", ($c // "") eq "true" ? 1 : 0, $x1, $y1, $x2, $y2, $t, $d), "\n";
+    }'
+}
+
+# ui_texts — the texts visible on the screen, one per line, top to bottom.
+ui_texts() { ui_nodes | awk -F'\t' '$6 != "" { print $6 }'; }
+
+# tap_dev <x> <y> — a tap in device pixels.
+tap_dev() { adbs shell input tap "$1" "$2" </dev/null; }
+
+# ui_collect [max-scrolls] — the texts of a scrolling screen: reads, scrolls
+# down, reads again, until a screen adds nothing new. Lines keep their order
+# and repeat only when the screen itself repeats them.
+ui_collect() {
+  local max="${1:-8}" i all="" page fresh
+  for i in $(seq 0 "$max"); do
+    page="$(ui_texts)"
+    if [ -z "$all" ]; then
+      fresh="$page"
+    else
+      fresh="$(printf '%s\n' "$page" | grep -Fxv -f <(printf '%s\n' "$all") || true)"
+    fi
+    [ -n "$fresh" ] || break
+    all="$all${all:+
+}$fresh"
+    [ "$i" = "$max" ] && break
+    adbs shell input swipe "$((DEV_W / 2))" "$((DEV_H * 70 / 100))" "$((DEV_W / 2))" "$((DEV_H * 30 / 100))" 500 </dev/null
+    sleep 1.2
+  done
+  printf '%s\n' "$all"
+}
+
 # --- actions -------------------------------------------------------------------
 
 # to_dev <shot-coordinate> — screenshot pixels → device pixels.

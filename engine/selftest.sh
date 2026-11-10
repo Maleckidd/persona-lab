@@ -1,0 +1,232 @@
+#!/bin/bash
+# Self-test of the engine's own logic. No device, no model, no app: only the
+# parts that decide something by themselves — rig incidents, the outcome
+# verdict, expectation patterns, the evidence rule, the findings ledger, the
+# session comparison and the seeded-defect score (with a stand-in for the CLI).
+#
+#   bash persona-lab/engine/selftest.sh
+#
+# Exit 0 = every check passed. Run it after any change to engine/lib.
+set -uo pipefail
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=lib/common.sh
+source "$DIR/lib/common.sh"
+
+T="$(mktemp -d "${TMPDIR:-/tmp}/persona-selftest.XXXXXX")"
+trap '[ -n "$T" ] && [ -d "$T" ] && rm -rf "$T"' EXIT
+
+# What load_config would have set.
+CONFIG_DIR="$T"
+HISTORY_DIR="$T/history"
+RUNS_DIR="$T/runs"
+APP_NAME="Selftest"
+SYNTHESIS_LANG=en
+STALL_SECONDS=180
+POST_STALL_SECONDS=180
+RESET_ALLOW_SECONDS=600
+JUDGE_OUTCOME=1
+MODEL_SCORER=stub
+MAX_BUDGET_SYNTHESIS=1
+MAX_BUDGET_PER_CALL=1
+EVIDENCE_SECTIONS="Problemy|Problems|Życzenia|Wishes"
+CLAUDE_AUTH_FLAGS=""
+mkdir -p "$HISTORY_DIR" "$RUNS_DIR"
+
+# shellcheck source=lib/report.sh
+source "$DIR/lib/report.sh"
+# shellcheck source=lib/verify.sh
+source "$DIR/lib/verify.sh"
+# shellcheck source=lib/ledger.sh
+source "$DIR/lib/ledger.sh"
+# shellcheck source=lib/calibration.sh
+source "$DIR/lib/calibration.sh"
+# shellcheck source=lib/compare.sh
+source "$DIR/lib/compare.sh"
+# shellcheck source=lib/persona-loop.sh
+source "$DIR/lib/persona-loop.sh"
+
+PASS=0
+FAIL=0
+# check <name> <actual> <expected>
+check() {
+  if [ "$2" = "$3" ]; then
+    PASS=$((PASS + 1))
+  else
+    FAIL=$((FAIL + 1))
+    printf 'FAIL  %s\n      expected: %s\n      actual:   %s\n' "$1" "$3" "$2"
+  fi
+}
+TAB="$(printf '\t')"
+row() {
+  local IFS="$TAB"
+  printf '%s\n' "$*"
+}
+
+# --- rig incidents ---------------------------------------------------------------
+
+mkdir -p "$T/run/steps"
+{
+  row reset 1000 0 120 600      # a normal setup
+  row shot-001 1120 9 1 0
+  row shot-002 1130 400 2 0     # the host slept while the model was thinking
+  row shot-003 1540 8 1 0       # starts right after: suspect
+  row shot-004 1800 8 250 200   # 100 words typed: slow, and allowed to be
+  row shot-005 2060 8 250 0     # the same time with nothing to type: a stall
+  row shot-006 2500 8 1 0
+} >"$T/run/steps/timing.tsv"
+check "taint: a slow turn and a hung action, typing excused" \
+  "$(run_taint "$T/run" | jq -c '[.[] | [.at, .seconds, (.suspect_steps | join(" "))]]')" \
+  '[["shot-002",400,"shot-002 shot-003"],["shot-005",258,"shot-005 shot-006"]]'
+
+{
+  row reset 1000 0 4000 600     # the host slept through the reset
+  row shot-001 5000 9 1 0
+  row shot-002 5100 9 1 0
+  row shot-003 5400 9 1 0
+} >"$T/run/steps/timing.tsv"
+check "taint: a stall during the setup makes the first turns suspect" \
+  "$(run_taint "$T/run" | jq -c '.[0] | [.at, (.suspect_steps | join(" "))]')" \
+  '["reset","reset shot-001 shot-002"]'
+
+mkdir -p "$T/legacy"
+{
+  row shot-001 23:50:00 '{}' x
+  row shot-002 23:50:10 '{}' x
+  row shot-003 00:40:10 '{}' x   # across midnight, 50 minutes later
+  row shot-004 00:40:20 '{}' x
+} >"$T/legacy/actions.log"
+check "taint: runs recorded before timing.tsv, across midnight" \
+  "$(run_taint "$T/legacy" | jq -c '.[0] | [.at, .seconds, (.suspect_steps | join(" "))]')" \
+  '["shot-003",3000,"shot-003 shot-004"]'
+
+mkdir -p "$T/clean/steps"
+row shot-001 1000 9 1 0 >"$T/clean/steps/timing.tsv"
+check "taint: a clean run has none" "$(run_taint "$T/clean")" '[]'
+
+# --- the end state -----------------------------------------------------------------
+
+printf '%s\n' '- Old cake' '' '## Item: Old cake' '    INGREDIENTS' '    1 egg' >"$T/before.md"
+printf '%s\n' '- Hi Ann this is the cake' '- Old cake' '' '## Item: Hi Ann this is the cake' '    1 egg' '    kisses, mum' '' \
+  '## Item: Old cake' '    INGREDIENTS' '    1 egg' >"$T/after.md"
+state_new_lines "$T/before.md" "$T/after.md" >"$T/new.md"
+check "state: only what the session added counts" "$(grep -c 'Old cake' "$T/new.md")" "0"
+check "state: no first read means everything counts" "$(state_new_lines "$T/missing.md" "$T/after.md" | grep -c 'Old cake')" "2"
+
+P='{"expect":[{"need":1,"label":"saved","matches":"cake"},{"need":2,"label":"own section","matches":"(?m)^\\s*INGREDIENTS\\s*$"},
+  {"need":3,"label":"no private notes","lacks":"kisses"},{"need":1,"label":"both","matches":"egg","lacks":"advert"},{"need":1,"label":"broken","matches":"(("}]}'
+check "expect: matches / lacks against the added lines, a broken pattern is null" \
+  "$(check_expectations "$P" "$T/new.md" | jq -c '[.[] | .pass]')" \
+  '[true,false,false,true,true,null]'
+
+verdict() { outcome_verdict "$1" "$2" "$3" | jq -r '"\(.verified) \(.self_report)"'; }
+check "verdict: done, but a pattern fails" "$(verdict '[{"pass":true},{"pass":false}]' '{"needs":[{"verdict":"met"}]}' done)" "partly overclaimed"
+check "verdict: gave up although everything is there" "$(verdict '[]' '{"needs":[{"verdict":"met"},{"verdict":"met"}]}' give_up)" "met underclaimed"
+check "verdict: done and nothing is there" "$(verdict '[]' '{"needs":[{"verdict":"not_met"}]}' done)" "not_met overclaimed"
+check "verdict: done and confirmed" "$(verdict '[{"pass":true}]' '{"needs":[{"verdict":"met"},{"verdict":"unverifiable"}]}' done)" "met consistent"
+check "verdict: nothing was checked" "$(verdict '[]' 'null' done)" "none unknown"
+check "verdict: nothing could be checked" "$(verdict '[]' '{"needs":[{"verdict":"unverifiable"}]}' done)" "unverifiable unknown"
+
+# --- gestures ------------------------------------------------------------------------
+
+LOW='{"avoids":["long_press"]}'
+check "gestures: an avoided one is not offered" "$(persona_actions "$LOW" | grep -c long_press)" "0"
+check "gestures: the rest still is" "$(persona_actions "$LOW" | grep -c '"swipe"')" "1"
+check "gestures: nothing avoided, everything offered" "$(persona_actions '{}' | grep -c 'long_press\|"swipe"')" "2"
+check "gestures: refused by the engine" "$(persona_avoids "$LOW" long_press && echo refused)" "refused"
+check "gestures: tap can never be ruled out" "$(persona_avoids '{"avoids":["tap"]}' tap || echo allowed)" "allowed"
+
+# --- the evidence rule ------------------------------------------------------------------
+
+mkdir -p "$T/shots"
+: >"$T/shots/shot-001.png"
+printf '%s\n' '# R' '## Problemy' '- with proof [shot-001]' '- no proof' '- wrong proof [shot-009]' '## Uwagi końcowe' '- free text' >"$T/report.raw.md"
+check_citations "$T/report.raw.md" "$T/shots" 1 >"$T/report.md"
+check "evidence: uncited bullets are rejected, cited ones linked" \
+  "$(sed -n '/^## Odrzucone/,$p' "$T/report.md" | grep -c '^- ') $(grep -c 'shots/shot-001.png' "$T/report.md")" "2 1"
+
+# --- small plumbing ---------------------------------------------------------------------
+
+check "extract_json: fenced output" "$(printf 'Sure:\n```json\n{"a": 1}\n```\n' | extract_json)" '{"a":1}'
+printf 'x {{KNOWN}} {{UNKNOWN}}\n' >"$T/tpl.md"
+check "render_template: unknown keys stay visible" "$(T_KNOWN=ok render_template "$T/tpl.md")" 'x ok {{UNKNOWN}}'
+
+# --- the ledger ----------------------------------------------------------------------------
+
+OLD="$T/runs/20000101-000000"   # before any verdict the owner gives below
+NEW="$T/runs/29990101-000000"   # after it
+mkdir -p "$OLD" "$NEW"
+echo '{"version":"1.0","runs":[]}' >"$OLD/summary.json"
+echo '{"version":"1.1","runs":[]}' >"$NEW/summary.json"
+ledger() { jq -c '[.findings[] | [.id, .status, (.sightings | length)]]' "$HISTORY_DIR/findings.json"; }
+
+cat >"$OLD/synthesis.md" <<'EOF'
+### [NEW-1] No confirmation after saving — P2
+### [NEW-12] Another one — P3
+### [NEW-2] Bigger text
+<!-- persona-lab-findings
+[{"id": "NEW-1", "status": "reproduced", "kind": "problem", "title": "No confirmation after saving", "priority": "P2", "personas": ["a", "b"], "runs": 3, "where": ["x.tsx:1"]},
+ {"id": "NEW-12", "status": "reproduced", "kind": "problem", "title": "Another | one", "priority": "P3"},
+ {"id": "NEW-2", "status": "reproduced", "kind": "wish", "title": "Bigger text"}]
+-->
+EOF
+found="$(extract_findings "$OLD/synthesis.md")"
+check "ledger: the block is read and removed from the report" "$(jq length <<<"$found") $(grep -c 'persona-lab-findings' "$OLD/synthesis.md")" "3 0"
+ledger_merge "$OLD" "$found" 2>/dev/null
+check "ledger: new findings get ids" "$(ledger)" '[["F-001","open",1],["F-002","open",1],["F-003","open",1]]'
+check "ledger: the report shows the ids, NEW-1 does not eat NEW-12" "$(tr '\n' ' ' <"$OLD/synthesis.md" | grep -o '\[[A-Z0-9-]*\]' | tr -d '\n')" "[F-001][F-002][F-003]"
+
+printf 'garbage\n<!-- persona-lab-findings\n{not json}\n-->\n' >"$T/bad.md"
+check "ledger: an unreadable block yields nothing" "$(extract_findings "$T/bad.md")" ""
+
+(ledger_set F-001 fixed "commit abc") 2>/dev/null
+(ledger_set F-002 fixed) 2>/dev/null
+check "ledger: an unknown id is refused" "$( (ledger_set F-404 fixed) 2>/dev/null; echo $?)" "1"
+check "ledger: an unknown status is refused" "$( (ledger_set F-001 done) 2>/dev/null; echo $?)" "1"
+
+# The old session is synthesized again and calls its findings new again.
+ledger_merge "$OLD" '[{"id":"NEW-1","status":"reproduced","kind":"problem","title":"no  confirmation after SAVING"},{"id":"NEW-2","status":"reproduced","kind":"wish","title":"Bigger text"}]' 2>/dev/null
+check "ledger: a re-synthesis keeps ids and the owner's verdict, and drops what it no longer reports" \
+  "$(ledger)" '[["F-001","fixed",1],["F-003","open",1]]'
+
+# A later session: F-001 is back, F-003 was exercised and did not happen.
+(ledger_set F-003 fixed) 2>/dev/null
+ledger_merge "$NEW" '[{"id":"F-001","status":"reproduced"},{"id":"F-003","status":"not_reproduced"},{"id":"F-777","status":"not_reproduced"},{"id":"NEW-1","status":"reproduced","kind":"problem","title":"Fresh"}]' 2>/dev/null
+check "ledger: fixed + reproduced = regressed, fixed + not reproduced = verified" \
+  "$(ledger)" '[["F-001","regressed",2],["F-003","verified",2],["F-004","open",1]]'
+ledger_merge "$NEW" '[{"id":"F-001","status":"not_exercised"}]' 2>/dev/null
+check "ledger: merging that session again takes its verdicts back" "$(ledger)" '[["F-001","fixed",1],["F-003","fixed",1]]'
+check "ledger: rendered for people" "$(grep -c '^| F-' "$HISTORY_DIR/findings.md")" "2"
+check "ledger: listed for the synthesis" "$(ledger_for_prompt | head -1)" "- F-001 [fixed, problem, P2] No confirmation after saving — x.tsx:1"
+
+# --- comparing sessions ----------------------------------------------------------------------
+
+mkdir -p "$OLD/p1/run-1" "$NEW/p1/run-1"
+echo '{"id":"p1","run":1,"steps":12,"outcome":"done","verified":"partly","self_report":"overclaimed","taint":[],"tainted":false}' >"$OLD/p1/run-1/summary.json"
+echo '{"id":"p1","run":1,"steps":9,"outcome":"done","verified":"met","self_report":"consistent","taint":[{"kind":"stall"}],"tainted":true}' >"$NEW/p1/run-1/summary.json"
+echo '[{"id":"F-001","status":"reproduced"},{"id":"F-003","status":"reproduced"}]' >"$OLD/findings.json"
+echo '[{"id":"F-001","status":"not_reproduced"},{"id":"F-003","status":"reproduced"}]' >"$NEW/findings.json"
+cmp_out="$(compare_sessions "$OLD" "$NEW")"
+check "compare: per persona, with the end-state verdict and the rig flag" \
+  "$(printf '%s\n' "$cmp_out" | grep '^| `p1`')" '| `p1` | done/partly (12) | done/met (9) ⚠ |'
+check "compare: what is gone, and whether the flow was exercised" \
+  "$(printf '%s\n' "$cmp_out" | grep -c '^- F-001 .*B: `not_reproduced`')" "1"
+
+# --- the seeded-defect score -------------------------------------------------------------------
+
+cat >"$T/stub-claude" <<'EOF'
+#!/bin/bash
+cat >/dev/null
+jq -cn '{type: "result", total_cost_usd: 0, result: "{\"defects\":[{\"id\":\"S1\",\"verdict\":\"reported\",\"runs\":[\"p1/run-1\"],\"quote\":\"q\"},{\"id\":\"S2\",\"verdict\":\"noticed\"},{\"id\":\"S4\",\"verdict\":\"not_exercised\"},{\"id\":\"S5\",\"verdict\":\"made up\"}]}"}'
+EOF
+chmod +x "$T/stub-claude"
+CLAUDE_BIN="$T/stub-claude"
+printf '# R\n## Problemy\n- nothing told me it saved [shot-001]\n' >"$NEW/p1/run-1/report.md"
+echo '{"defects":[{"id":"S1","defect":"a"},{"id":"S2","defect":"b"},{"id":"S3","defect":"c"},{"id":"S4","defect":"d"},{"id":"S5","defect":"e"}]}' >"$T/seeded.json"
+score_seeded "$NEW" "$T/seeded.json" 2>/dev/null
+check "seeded: recall over the defects somebody reached; skipped and unknown verdicts count as missed" \
+  "$(jq -c '[.reported, .noticed, .missed, .not_exercised, .reachable, .recall]' "$NEW/seeded-score.json")" '[1,1,2,1,4,0.25]'
+check "seeded: one table row per planted defect" "$(grep -c '^| S' "$NEW/seeded-score.md")" "5"
+
+printf '\n%s passed, %s failed\n' "$PASS" "$FAIL"
+[ "$FAIL" = 0 ]
