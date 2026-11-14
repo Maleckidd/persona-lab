@@ -75,6 +75,16 @@ load_config() {
   fi
 }
 
+# engine_version — the commit this engine is at, with "+" when it has
+# uncommitted changes; nothing when it is not a git checkout. The app's
+# repository does not pin the engine, so each session records what it ran on.
+engine_version() {
+  local v
+  v="$(git -C "$ENGINE_DIR" rev-parse --short HEAD 2>/dev/null)" || return 0
+  [ -z "$(git -C "$ENGINE_DIR" status --porcelain -- "$ENGINE_DIR" 2>/dev/null)" ] || v="$v+"
+  printf '%s' "$v"
+}
+
 # rel_path <target> <base-dir> — <target> as a path relative to <base-dir>.
 # Both must exist. Symlinks are resolved first, so /tmp and /private/tmp on
 # macOS count as the same place.

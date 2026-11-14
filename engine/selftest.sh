@@ -243,7 +243,7 @@ source "$DIR/lib/history.sh"
   HISTORY_DIR="$APP_REPO/qa/log/history"
   S="$RUNS_DIR/20260102-030405"
   mkdir -p "$S"
-  echo '{"version":"1.0","runs":[{"id":"p1","run":1,"steps":3,"outcome":"done","cost_usd":0.1}]}' >"$S/summary.json"
+  echo '{"version":"1.0","engine":"abc1234","runs":[{"id":"p1","run":1,"steps":3,"outcome":"done","cost_usd":0.1}]}' >"$S/summary.json"
   echo '{"personas":[{"id":"p1","name":"P, 30","language":"en","start_state":"fresh","tech_level":"low","summary":"s"}]}' >"$S/personas.json"
   printf '# Synthesis\n\nSee [the shot](qa/sessions/20260102-030405/p1/run-1/shots/shot-001.png).\n' >"$S/synthesis.md"
   archive_session "$S" 2>/dev/null
@@ -251,6 +251,8 @@ source "$DIR/lib/history.sh"
 ) >"$T/history-out.md" 2>/dev/null
 check "history: screenshot links are rewritten relative to the history file" \
   "$(grep -c '](../../sessions/20260102-030405/p1/run-1/shots/shot-001.png)' "$T/history-out.md")" "1"
+check "history: the entry names the engine commit the session ran on" \
+  "$(grep -c '^- \*\*Engine (persona-lab commit):\*\* `abc1234`$' "$T/history-out.md")" "1"
 check "history: the raw-data link follows RUNS_DIR" \
   "$(grep -c '](../../sessions/20260102-030405/)' "$T/history-out.md")" "1"
 

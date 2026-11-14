@@ -26,6 +26,9 @@ archive_session() {
   date="$(echo "$sid" | sed 's/^\([0-9]\{4\}\)\([0-9]\{2\}\)\([0-9]\{2\}\).*/\1-\2-\3/')"
   file="$HISTORY_DIR/$(printf '%02d' "$num")-$date.md"
   version="$(jq -r '.version // "?"' "$session/summary.json" 2>/dev/null)"
+  # Sessions recorded before the engine had a repository of its own have none.
+  local engine
+  engine="$(jq -r '.engine // empty' "$session/summary.json" 2>/dev/null)"
 
   # Where the raw data is, seen from the history file, and the same directory
   # as the synthesis wrote it: relative to the app repository, its working
@@ -56,15 +59,15 @@ archive_session() {
     over="—"
   fi
 
-  local L_ITER L_DATE L_APP L_RAW L_PERSONAS L_RUNS L_COST L_ISO L_OUT L_TITLE L_CHECK L_SEEDED
+  local L_ITER L_DATE L_APP L_ENGINE L_RAW L_PERSONAS L_RUNS L_COST L_ISO L_OUT L_TITLE L_CHECK L_SEEDED
   if [ "$SYNTHESIS_LANG" = pl ]; then
-    L_TITLE="Iteracja"; L_DATE="Data"; L_APP="Wersja aplikacji"; L_RAW="Surowe dane (lokalnie, poza gitem)"
+    L_TITLE="Iteracja"; L_DATE="Data"; L_APP="Wersja aplikacji"; L_ENGINE="Silnik (commit persona-lab)"; L_RAW="Surowe dane (lokalnie, poza gitem)"
     L_PERSONAS="Persony"; L_RUNS="Przebiegi"; L_COST="Koszt (orientacyjny)"; L_ISO="Izolacja person"
     L_OUT="przebiegów: %s — cel osiągnięty według persony: %s, rezygnacja: %s, limit: %s, pominięte: %s"
     L_CHECK="Kontrola silnika|stan końcowy potwierdza cel: %s z %s sprawdzonych, persona się myliła (overclaimed): %s, przebiegi z incydentem stanowiska: %s"
     L_SEEDED="Build z zasianymi defektami — sesja kalibracyjna, poza rejestrem znalezisk"
   else
-    L_TITLE="Iteration"; L_DATE="Date"; L_APP="App version"; L_RAW="Raw data (local, not in git)"
+    L_TITLE="Iteration"; L_DATE="Date"; L_APP="App version"; L_ENGINE="Engine (persona-lab commit)"; L_RAW="Raw data (local, not in git)"
     L_PERSONAS="Personas"; L_RUNS="Runs"; L_COST="Cost (approx.)"; L_ISO="Persona isolation"
     L_OUT="runs: %s — done according to the persona: %s, gave up: %s, limit: %s, skipped: %s"
     L_CHECK="Engine checks|end state confirms the goal: %s of %s checked, persona was wrong (overclaimed): %s, runs with a rig incident: %s"
@@ -77,6 +80,7 @@ archive_session() {
     printf '# %s %s — %s · %s %s\n\n' "$L_TITLE" "$num" "$date" "$APP_NAME" "$version"
     printf -- '- **%s:** %s\n' "$L_DATE" "$date (session \`$sid\`)"
     printf -- '- **%s:** %s\n' "$L_APP" "$version"
+    [ -n "$engine" ] && printf -- '- **%s:** `%s`\n' "$L_ENGINE" "$engine"
     printf -- "- **%s:** $L_OUT\n" "$L_RUNS" "$runs" "$done" "$gave" "$limit" "$skipped"
     printf -- "- **%s:** ${L_CHECK#*|}\n" "${L_CHECK%%|*}" "$verified" "$checked" "$over" "$tainted"
     [ -s "$session/seeded-score.md" ] && printf -- '- **%s**\n' "$L_SEEDED"

@@ -3,7 +3,7 @@
 # this directory. Copy engine/templates/ to <your-repo>/persona-lab/config/.
 
 APP_NAME="<App name>"
-APP_ID=<com.example.app>
+APP_ID="<com.example.app>"
 APP_REPO="$(cd "$CONFIG_DIR/../.." && pwd)"   # the repository the synthesis reads
 ANDROID_SERIAL="${ANDROID_SERIAL:-emulator-5554}"
 

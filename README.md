@@ -42,6 +42,10 @@ The app's repository, by the convention the defaults follow:
 `HISTORY_DIR` say otherwise. Nothing depends on the folder being called
 `persona-lab`.
 
+The app's repository does not pin a version of the engine. Each session writes
+the engine commit it ran on into its `summary.json` and its history entry, with
+a `+` when the engine had uncommitted changes.
+
 An app detail goes in the app's `config/config.sh` (or a hook there), never in
 the engine.
 

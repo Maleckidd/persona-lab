@@ -215,7 +215,8 @@ APP_VERSION="$(adbs shell dumpsys package "$APP_ID" | sed -n 's/.*versionName=//
 SESSION_ID="$(date +%Y%m%d-%H%M%S)"
 SESSION="$RUNS_DIR/$SESSION_ID"
 mkdir -p "$SESSION"
-log "session $SESSION_ID — $APP_NAME $APP_VERSION"
+ENGINE_VERSION="$(engine_version)"
+log "session $SESSION_ID — $APP_NAME $APP_VERSION, engine ${ENGINE_VERSION:-not a git checkout}"
 [ -z "$SEEDED" ] || mark_seeded_session "$SESSION"
 if declare -F capture_state >/dev/null && [ "$JUDGE_OUTCOME" = 1 ]; then
   log "outcome check: on (capture_state hook, judge $MODEL_JUDGE, plus each persona's \"expect\" patterns)"
@@ -308,7 +309,8 @@ for id in $PERSONA_IDS; do
   done
 done
 
-jq -s '{session: $sid, app: $app, version: $ver, runs: .}' --arg sid "$SESSION_ID" --arg app "$APP_NAME" --arg ver "$APP_VERSION" \
+jq -s '{session: $sid, app: $app, version: $ver, engine: $eng, runs: .}' --arg sid "$SESSION_ID" --arg app "$APP_NAME" --arg ver "$APP_VERSION" \
+  --arg eng "$ENGINE_VERSION" \
   "$SESSION"/*/run-*/summary.json >"$SESSION/summary.json"
 log "total cost of runs: \$$(jq '[.runs[].cost_usd] | add' "$SESSION/summary.json")"
 log "outcomes: $(jq -r '.runs | map(select(.outcome != "skipped")) |
