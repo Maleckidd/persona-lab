@@ -13,7 +13,7 @@
 set -euo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-REPO="$(cd "$DIR/../.." && pwd)"
+REPO="${APP_REPO:-$(cd "$DIR/../.." && pwd)}"
 PATCH="$DIR/seeded.patch"
 APK_OUT="$REPO/android/app/build/outputs/apk/release/app-release.apk"
 DEST="$REPO/persona-lab/runs/seeded/app-seeded.apk"

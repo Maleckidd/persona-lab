@@ -7,31 +7,48 @@ each backed by a screenshot, plus one synthesis that groups everything across
 personas and runs and maps it onto the code.
 
 ```bash
-bash persona-lab/engine/run.sh persona-lab/config            # full session
-bash persona-lab/engine/run.sh persona-lab/config --count 1 --runs 1   # smoke run
+# run from the app's repository; PERSONA_LAB_ENGINE is engine/ in a clone of this one
+bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config            # full session
+bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --count 1 --runs 1   # smoke run
 ```
 
-…or `/persona-test [options]` in Claude Code.
+…or `/persona-test [options]` in Claude Code: copy
+`integrations/claude-code/persona-test.md` to the app's `.claude/commands/`.
 
 ## Layout
 
-| Path | What | Generic? |
-|---|---|---|
-| `engine/` | the tool: `run.sh`, `verify-isolation.sh`, `lib/`, `prompts/`, `templates/` | **yes — never names this app** |
-| `config/` | this app's setup: `config.sh`, `brief*.md`, `personas.override.md`, `calibration/` | no |
-| `config-import/`, `config-research/` | focused studies built on `config/` (below) | no |
-| `config-seeded/` | the calibration run: the app with planted defects, and their manifest | no |
-| `history/` | one file per session, plus the findings ledger (`findings.json`, `findings.md`); tracked | — |
-| `runs/` | session output, git-ignored | — |
+The engine is a clone anywhere on the machine and holds no state. The config,
+`runs/` and `history/` stay in the app's repository: the synthesis runs there,
+read-only, and cites the session by a path relative to it.
 
-`engine/` is kept free of anything app-specific so it can move to its own
-repository later unchanged. Keep it that way: an app detail goes in
-`config/config.sh` (or a hook there), never in the engine.
+This repository:
 
-`bash persona-lab/engine/selftest.sh` checks the engine's own logic (rig
-incidents, outcome verdicts, the evidence rule, the ledger, the comparison, the
-seeded score) in a few seconds, with no device and no model. Run it after any
-change under `engine/lib`.
+| Path | What |
+|---|---|
+| `engine/` | the tool: `run.sh`, `verify-isolation.sh`, `selftest.sh`, `lib/`, `prompts/`, `templates/`. It never names an app |
+| `examples/keeptaste/` | the configs of the app it was built on, as a snapshot (below) |
+| `integrations/claude-code/` | the `/persona-test` command for Claude Code |
+
+The app's repository, by the convention the defaults follow:
+
+| Path | What |
+|---|---|
+| `persona-lab/config/` | the app's setup: `config.sh`, `brief*.md`, `personas.override.md`, `calibration/`. Start from `engine/templates/` |
+| `persona-lab/config-<study>/` | focused studies built on `config/` (below) |
+| `persona-lab/history/` | one file per session, plus the findings ledger (`findings.json`, `findings.md`); tracked |
+| `persona-lab/runs/` | session output, git-ignored |
+
+`runs/` and `history/` are the config's siblings unless `RUNS_DIR` and
+`HISTORY_DIR` say otherwise. Nothing depends on the folder being called
+`persona-lab`.
+
+An app detail goes in the app's `config/config.sh` (or a hook there), never in
+the engine.
+
+`bash engine/selftest.sh` checks the engine's own logic (rig incidents, outcome
+verdicts, the evidence rule, the ledger, the comparison, the seeded score, the
+history links, the isolation check against a stand-in CLI) in a few seconds,
+with no device and no model. Run it after any change under `engine/`.
 
 ## How it works
 
@@ -125,7 +142,7 @@ whether a persona went through that flow (`not_reproduced`) or nobody did
 (`not_exercised`). The engine merges that and assigns the new ids.
 
 ```bash
-bash persona-lab/engine/run.sh persona-lab/config --finding F-012 fixed "commit abc123"
+bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --finding F-012 fixed "commit abc123"
 ```
 
 | Status | Set by | Meaning |
@@ -147,7 +164,7 @@ so on every commit.
 ### Comparing two sessions
 
 ```bash
-bash persona-lab/engine/run.sh persona-lab/config --compare \
+bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --compare \
   persona-lab/runs/<session-A> persona-lab/runs/<session-B> > compare.md
 ```
 
@@ -176,7 +193,7 @@ the mutation-testing idea applied to a usability test.
 - With six defects the number is coarse. Use it to compare engine versions,
   models and persona sets against each other, on the same manifest.
 
-For KeepTaste this is `config-seeded/` (below).
+For KeepTaste this is `examples/keeptaste/config-seeded/`.
 
 ### The loop, and why the persona cannot see the repo
 
@@ -230,12 +247,13 @@ restart, for anything that restart would lose, like a share intent.
 ### Focused studies
 
 A study of one feature gets its own config directory next to `config/` that
-sources the base one and overrides what differs: see `config-import/`. Personas
+sources the base one and overrides what differs: see
+`examples/keeptaste/config-import/`. Personas
 there are written by hand, because each one has to match the materials on the
 device, and `SYNTHESIS_FOCUS` adds an instruction to the synthesis.
 
 ```bash
-caffeinate -i bash persona-lab/engine/run.sh persona-lab/config-import \
+caffeinate -i bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config-import \
   --personas-file persona-lab/config-import/personas.json
 ```
 
@@ -250,14 +268,14 @@ report headings whose bullets need a screenshot.
 
 ### Research team
 
-`config-research/` swaps the users for a simulated research team, to ask where
+`examples/keeptaste/config-research/` swaps the users for a simulated research team, to ask where
 the app could go rather than whether a task works. The team must not know the
 product's intended limits, or it stays inside them, so nothing it reads is
 written from the spec. Weighing its ideas against the spec is the owner's job,
 after the study.
 
 ```bash
-caffeinate -i bash persona-lab/engine/run.sh persona-lab/config-research \
+caffeinate -i bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config-research \
   --personas-file persona-lab/config-research/personas.json
 ```
 
@@ -341,7 +359,8 @@ number. `run.sh <config> --archive-only <session-dir>` rewrites one entry.
 
 ## Requirements
 
-- macOS (`sips`), `adb`, `jq`, `perl`, `ffmpeg` (video compacting only).
+- macOS (`sips`), `adb`, `jq`, `perl`, `python3` (only for `clipboard_set`),
+  `ffmpeg` (video compacting only).
 - An **emulator** for video (`adb emu screenrecord`; `adb shell screenrecord`
   only gets one frame on the emulator). Start it with `-gpu host`, or the video
   drops to a few fps. Runs on a real device work, just without video.
@@ -350,54 +369,9 @@ number. `run.sh <config> --archive-only <session-dir>` rewrites one entry.
   `--bare`) or a `claude setup-token` login. The copy bundled inside the Claude
   desktop app isn't logged in on its own.
 
-## KeepTaste config
+## The example
 
-- `config/brief.md` (PL) and `config/brief.en.md` are the **Play Store
-  listing** text (short + full description, version B from
-  `assets/store/play-store-listing.md`) — what a user reads before installing.
-  Edit them freely; personas get the one in their language.
-- Start states: `fresh` (`pm clear` + per-app locale) and `demo` (the curated
-  demo library via `scripts/reset-demo-library.sh`, which needs
-  `assets/store/keeptaste-demo*.zip` and the coordinates in `scripts/lib/screen.sh`).
-- The app UI language follows the persona's language via
-  `cmd locale set-app-locales`.
-- `capture_state` in `config/config.sh` reads the end state through the UI,
-  because the release build is not debuggable: a cold start into "all recipes"
-  by deep link (`keeptaste://cookbook/all`), the full text of the three most
-  recently changed recipes, the recipe titles, every cookbook on the home
-  screen with the recipes in it, the shopping lists and the first list. It
-  taps recipe cards, cookbook tiles, list rows and Back, nothing else. It finds
-  cards and tiles by shape (the only tall tappable elements on the recipe
-  list; tappable squares half the screen wide on the home screen), so a
-  redesign of either screen needs a look at it. The "new cookbook" tile has
-  the shape of a cookbook and is skipped by its label (`CAPTURE_SKIP_TILES`),
-  which has to follow `home.newCookbook` in `i18n/dictionary.ts`.
-  Lists are read as card titles only, the first `CAPTURE_TITLES` (12) of each,
-  so that two reads of the same list come out the same. The search field of
-  "all recipes" takes focus by itself and brings the keyboard up over the
-  lower cards; the hook closes it (`keyboard_hide`) before every tap and
-  scroll there. Before that a tap on the third card typed a letter into the
-  search, and a scroll glide-typed a word.
-- `config-import/personas.json` has `expect` patterns for every import path
-  (the recipe is there, ingredients have their own section, the mother's
-  private notes are gone, no hashtags), so that study's outcomes no longer
-  depend on what the persona thinks it saved.
-- `config-seeded/` is the calibration run. `seeded.patch` plants six defects
-  (no confirmation after saving, a PDF share action called "Export", an error
-  that only says "Error.", no add button inside a cookbook, an empty search
-  that claims there are no recipes, an import button called "More");
-  `seeded.json` lists them for the scorer. The patch is never left in the
-  working tree:
-
-  ```bash
-  bash persona-lab/config-seeded/build.sh     # apply → gradlew assembleRelease → take it back out
-  bash persona-lab/engine/run.sh persona-lab/config-seeded \
-    --seeded persona-lab/config-seeded/seeded.json
-  ```
-
-  The run installs the seeded APK over the app on the emulator; build and
-  install a normal one afterwards. When the patch stops applying, the code has
-  moved: plant the defects again and save them with `git diff`.
-- `config/calibration/real-testers.md` — the 5 external testers' feedback goes
-  here; the synthesis then adds a "Kalibracja" section (what the personas caught,
-  missed, recall).
+`examples/keeptaste/` holds the configs of the app this tool was built on: a
+base config with a UI-driven `capture_state` hook, a focused study, a
+research-team study and a calibration build. It is a snapshot to read, not a
+working copy. See [its README](examples/keeptaste/README.md).

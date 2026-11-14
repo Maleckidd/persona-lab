@@ -5,7 +5,9 @@
 
 APP_NAME="KeepTaste"
 APP_ID=com.damianmalecki.keeptaste
-APP_REPO="$(cd "$CONFIG_DIR/../.." && pwd)"
+# In the app's repository this file is persona-lab/config/config.sh, two levels
+# below the root. In this snapshot the app is somewhere else: say where.
+APP_REPO="${APP_REPO:-$(cd "$CONFIG_DIR/../.." && pwd)}"
 
 # The phone emulator (Medium_Phone AVD, 1080x2400). Start it with `-gpu host`
 # or the video drops to a few fps — see docs/store-promo-video.md.
