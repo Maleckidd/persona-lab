@@ -15,10 +15,14 @@ How to decide:
 - The capture reads only the newest items in full. If the evidence you would need is outside what was captured, the verdict is "unverifiable", not "not_met".
 - Decide from the state, not from the claim. The claim is shown only so that you can point out where the two disagree.
 
+Separately from the verdict, say for each need what the person BELIEVES ("claimed"). Read only their claim for this, never the state:
+- false: the person says themselves that this need failed, was only partly done, or that they gave up on it. "Outcome: done" only means they stopped; someone who stops and says "I only got the eggs onto the list, the rest is missing" does not believe the rest is there.
+- true: everything else. They say or imply it worked, or they stop without saying anything about this need.
+
 For every verdict except "unverifiable" and "not_met", quote the evidence from the state after the session (at most 200 characters). No quote, no "met".
 
 Write "evidence" and "note" in language: {{LANG}}.
 
 Reply with ONE JSON object and nothing else, one entry per need, in the order given:
 
-{"needs": [{"need": "the need, shortened to a few words", "verdict": "met | partly | not_met | unverifiable", "evidence": "a quote from the state after the session, or empty", "note": "what is missing or wrong, or where the claim and the state disagree; empty if nothing"}]}
+{"needs": [{"need": "the need, shortened to a few words", "verdict": "met | partly | not_met | unverifiable", "claimed": true, "evidence": "a quote from the state after the session, or empty", "note": "what is missing or wrong, or where the claim and the state disagree; empty if nothing"}]}

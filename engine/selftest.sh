@@ -124,6 +124,11 @@ check "verdict: done, but a pattern fails" "$(verdict '[{"pass":true},{"pass":fa
 check "verdict: gave up although everything is there" "$(verdict '[]' '{"needs":[{"verdict":"met"},{"verdict":"met"}]}' give_up)" "met underclaimed"
 check "verdict: done and nothing is there" "$(verdict '[]' '{"needs":[{"verdict":"not_met"}]}' done)" "not_met overclaimed"
 check "verdict: done and confirmed" "$(verdict '[{"pass":true}]' '{"needs":[{"verdict":"met"},{"verdict":"unverifiable"}]}' done)" "met consistent"
+check "verdict: done, incomplete, but nothing the person believes is missing" "$(verdict '[]' '{"needs":[{"verdict":"partly","claimed":true},{"verdict":"met","claimed":true}]}' done)" "partly consistent"
+check "verdict: done, and the person says themselves that a need failed" "$(verdict '[]' '{"needs":[{"verdict":"not_met","claimed":false},{"verdict":"partly","claimed":true}]}' done)" "partly consistent"
+check "verdict: done, and a need the person believes in is not there" "$(verdict '[]' '{"needs":[{"verdict":"not_met","claimed":true},{"verdict":"met","claimed":true}]}' done)" "partly overclaimed"
+check "verdict: a failed pattern on a need the person disclaims" "$(verdict '[{"need":1,"pass":false}]' '{"needs":[{"verdict":"not_met","claimed":false}]}' done)" "not_met consistent"
+check "verdict: a failed pattern on a need the person believes in" "$(verdict '[{"need":2,"pass":false}]' '{"needs":[{"verdict":"met","claimed":true},{"verdict":"partly","claimed":true}]}' done)" "partly overclaimed"
 check "verdict: nothing was checked" "$(verdict '[]' 'null' done)" "none unknown"
 check "verdict: nothing could be checked" "$(verdict '[]' '{"needs":[{"verdict":"unverifiable"}]}' done)" "unverifiable unknown"
 

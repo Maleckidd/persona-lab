@@ -41,12 +41,19 @@ reset_app() {
 #     link or app_start), so an unsaved form does not count;
 #   - never tap a control that changes data;
 #   - print the same thing for the same state both times — the engine takes
-#     the lines added by the second read as "what the persona did".
+#     the lines added by the second read as "what the persona did". ui_collect
+#     drops a line a later screen repeats, so on a list whose rows share texts
+#     (a duration, a count) read the rows' labels with ui_nodes instead;
+#   - cover every place a need can end up in. What the hook does not visit the
+#     judge sees as missing, and a persona that put something there gets
+#     flagged as wrong about it.
 # Helpers (device pixels, hooks only — never shown to a persona):
 #   ui_texts            visible texts, top to bottom
 #   ui_collect [n]      the same, scrolling down up to n times
 #   ui_nodes            clickable, x1, y1, x2, y2, text, label (tab-separated)
 #   tap_dev <x> <y>
+#   keyboard_hide       closes the keyboard if it is up; call it before a tap or
+#                       a swipe on a screen whose field takes focus by itself
 #
 # capture_state() {
 #   app_stop

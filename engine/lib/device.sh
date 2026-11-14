@@ -220,6 +220,24 @@ ui_texts() { ui_nodes | awk -F'\t' '$6 != "" { print $6 }'; }
 # tap_dev <x> <y> — a tap in device pixels.
 tap_dev() { adbs shell input tap "$1" "$2" </dev/null; }
 
+# keyboard_hide — closes the on-screen keyboard if it is up. A hook that taps
+# or swipes in the lower half of a screen needs it wherever a field takes focus
+# by itself: the UI dump does not show the keyboard, so a tap aimed at a row
+# under it types a letter, and a swipe across it glide-types a word into the
+# field. Back closes only the keyboard while it is shown, hence the check.
+# Returns once the keyboard is really gone: a swipe made while it slides away
+# and the window resizes is dropped.
+keyboard_hide() {
+  local i
+  adbs shell dumpsys input_method </dev/null | grep -q 'mInputShown=true' || return 0
+  adbs shell input keyevent KEYCODE_BACK </dev/null
+  for i in 1 2 3 4 5 6; do
+    sleep 0.5
+    adbs shell dumpsys input_method </dev/null | grep -q 'mInputShown=true' || break
+  done
+  sleep 0.5
+}
+
 # ui_collect [max-scrolls] — the texts of a scrolling screen: reads, scrolls
 # down, reads again, until a screen adds nothing new. Lines keep their order
 # and repeat only when the screen itself repeats them.

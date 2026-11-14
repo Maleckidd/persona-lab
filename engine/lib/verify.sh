@@ -116,7 +116,7 @@ check_expectations() {
 #
 # One tool-free model call, isolated like a persona: the persona's needs and
 # materials, what it claims, and the app's state before and after. Prints
-# {"needs": [{need, verdict, evidence, note}]} or nothing when the call fails.
+# {"needs": [{need, verdict, claimed, evidence, note}]} or nothing when the call fails.
 # The transcript goes to <run-dir>/steps/judge.jsonl.
 judge_outcome() {
   local persona="$1" dir="$2" outcome="$3" reason="$4" lang="$5" sys="$6" before="" msg
@@ -162,11 +162,25 @@ Reply with one JSON object only."
 #   verified     met | partly | not_met | unverifiable   (none: nothing was checked)
 #   self_report  consistent | overclaimed | underclaimed | unknown
 #
-# "overclaimed" is the persona saying it is done while the end state disagrees.
+# "overclaimed" is the persona leaving with a belief the end state contradicts:
+# it stopped with "done", and a need it does not itself call a failure has
+# nothing in the app (the judge's "not_met"), or one of the owner's patterns
+# for such a need fails.
+#
+# "done" alone claims nothing: the action means "I am finished, successfully or
+# not", and the claim is in the reason given with it. So the judge also says per
+# need whether the person believes it was achieved ("claimed"), and a need the
+# person reports as failed is not an overclaim however empty the state is. A
+# missing "claimed" counts as believed, which errs towards flagging. "partly"
+# makes "verified" partly and is never an overclaim by itself: the judge gives
+# it for an inference it could not confirm as readily as for a missing step.
 outcome_verdict() {
   jq -n --argjson expect "${1:-[]}" --argjson judge "${2:-null}" --arg outcome "$3" '
     ($judge.needs // []) as $needs |
+    def believed($n): if ($n | type) == "number" and $n >= 1 then $needs[$n - 1].claimed != false else true end;
     ([$expect[] | select(.pass == false)] | length) as $failed |
+    ([$needs[] | select(.verdict == "not_met" and .claimed != false)] | length) as $missing |
+    ([$expect[] | select(.pass == false) | select(believed(.need))] | length) as $broken |
     ([$needs[] | select(.verdict == "met")] | length) as $met |
     ([$needs[] | select(.verdict == "partly")] | length) as $partly |
     ([$needs[] | select(.verdict == "not_met")] | length) as $not |
@@ -178,9 +192,9 @@ outcome_verdict() {
      else "partly" end) as $verified |
     {verified: $verified,
      self_report: (if $verified == "none" or $verified == "unverifiable" then "unknown"
-       elif $outcome == "done" and $verified != "met" then "overclaimed"
+       elif $outcome == "done" and $missing + $broken > 0 then "overclaimed"
        elif $outcome != "done" and $verified == "met" then "underclaimed"
        else "consistent" end),
-     needs_met: $met, needs_partly: $partly, needs_not_met: $not,
+     needs_met: $met, needs_partly: $partly, needs_not_met: $not, needs_contradicted: $missing,
      expect_failed: $failed, expect: $expect, needs: $needs}'
 }
