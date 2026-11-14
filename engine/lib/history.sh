@@ -27,6 +27,13 @@ archive_session() {
   file="$HISTORY_DIR/$(printf '%02d' "$num")-$date.md"
   version="$(jq -r '.version // "?"' "$session/summary.json" 2>/dev/null)"
 
+  # Where the raw data is, seen from the history file, and the same directory
+  # as the synthesis wrote it: relative to the app repository, its working
+  # directory. Neither assumes what the folder around runs/ is called.
+  local runs_link runs_in_repo
+  runs_link="$(rel_path "$RUNS_DIR" "$HISTORY_DIR")"
+  runs_in_repo="${RUNS_DIR#"$APP_REPO"/}"
+
   local runs done gave limit skipped cost_runs cost_synth isolation
   runs="$(jq '[.runs[] | select(.outcome != "skipped")] | length' "$session/summary.json")"
   done="$(jq '[.runs[] | select(.outcome == "done")] | length' "$session/summary.json")"
@@ -75,7 +82,7 @@ archive_session() {
     [ -s "$session/seeded-score.md" ] && printf -- '- **%s**\n' "$L_SEEDED"
     printf -- '- **%s:** %s\n' "$L_ISO" "${isolation:-?}"
     printf -- '- **%s:** $%s + $%s\n' "$L_COST" "$cost_runs" "$cost_synth"
-    printf -- '- **%s:** [`runs/%s/`](../runs/%s/)\n\n' "$L_RAW" "$sid" "$sid"
+    printf -- '- **%s:** [`runs/%s/`](%s/%s/)\n\n' "$L_RAW" "$sid" "$runs_link" "$sid"
     printf '## %s\n\n' "$L_PERSONAS"
     jq -r '.personas[] | "- **\(.name)** (`\(.id)`, \(.language), \(.start_state), \(.tech_level)) — \(.summary)"' "$session/personas.json"
     if [ "$SYNTHESIS_LANG" = pl ]; then
@@ -87,8 +94,10 @@ archive_session() {
       "\(if .self_report == "overclaimed" or .self_report == "underclaimed" then " (" + .self_report + ")" else "" end) | \(.steps) | " +
       "\(if .tainted == true then "⚠ " + ([.taint[]? | "\(.kind) @ \(.at), \(.seconds) s"] | join("; ")) else "" end) |"' "$session/summary.json"
     printf '\n---\n\n'
-    # The synthesis links screenshots from the repo root; from here they are ../runs/.
-    sed -e '1{/^# /d;}' -e 's#](persona-lab/runs/#](../runs/#g' "$session/synthesis.md"
+    # The synthesis links screenshots from the repo root; here they are
+    # relative to this file.
+    sed -e '1{/^# /d;}' "$session/synthesis.md" |
+      FROM="]($runs_in_repo/" TO="]($runs_link/" perl -pe 's/\Q$ENV{FROM}\E/$ENV{TO}/g'
     if [ -s "$session/seeded-score.md" ]; then
       printf '\n'
       cat "$session/seeded-score.md"
@@ -105,7 +114,7 @@ history_index() {
   {
     if [ "$SYNTHESIS_LANG" = pl ]; then
       printf '# Historia testów z personami — %s\n\n' "$APP_NAME"
-      printf 'Jedna iteracja = jedna sesja `persona-lab/engine/run.sh`. Pliki powstają automatycznie po syntezie.\n'
+      printf 'Jedna iteracja = jedna sesja persona-lab (`engine/run.sh`). Pliki powstają automatycznie po syntezie.\n'
       printf 'Zrzuty ekranu i wideo zostają lokalnie w `runs/` (poza gitem).\n\n'
       printf '„Cel według persony” to deklaracja persony. „Potwierdzone” to przebiegi, w których stan końcowy aplikacji pokazuje osiągnięty cel\n'
       printf '(„—”: sesja sprzed tej kontroli albo bez niej). „Stanowisko” to przebiegi z incydentem (uśpiony komputer, zawieszone wywołanie).\n'
@@ -113,7 +122,7 @@ history_index() {
       printf '\n| # | Data | Wersja | Przebiegi | Cel według persony | Potwierdzone | Rezygnacja | Stanowisko | Plik |\n|---|---|---|---|---|---|---|---|---|\n'
     else
       printf '# Persona testing history — %s\n\n' "$APP_NAME"
-      printf 'One iteration = one `persona-lab/engine/run.sh` session, archived automatically after synthesis.\n'
+      printf 'One iteration = one persona-lab session (`engine/run.sh`), archived automatically after synthesis.\n'
       printf 'Screenshots and videos stay local in `runs/` (not in git).\n\n'
       printf '"Done per persona" is what the persona declared. "Confirmed" counts the runs whose end state shows the goal achieved\n'
       printf '("—": a session recorded before that check, or without it). "Rig" counts runs with an incident (host asleep, a hung call).\n'

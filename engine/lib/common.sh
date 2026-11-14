@@ -75,6 +75,13 @@ load_config() {
   fi
 }
 
+# rel_path <target> <base-dir> — <target> as a path relative to <base-dir>.
+# Both must exist. Symlinks are resolved first, so /tmp and /private/tmp on
+# macOS count as the same place.
+rel_path() {
+  perl -MCwd=realpath -MFile::Spec -e 'print File::Spec->abs2rel(realpath($ARGV[0]), realpath($ARGV[1])), "\n"' "$1" "$2"
+}
+
 # prompt_file <name> — the config's prompts/<name> when it has one (a study of
 # another kind: other instructions, other report), else the engine's.
 prompt_file() {

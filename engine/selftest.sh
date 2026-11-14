@@ -4,7 +4,7 @@
 # verdict, expectation patterns, the evidence rule, the findings ledger, the
 # session comparison and the seeded-defect score (with a stand-in for the CLI).
 #
-#   bash persona-lab/engine/selftest.sh
+#   bash engine/selftest.sh
 #
 # Exit 0 = every check passed. Run it after any change to engine/lib.
 set -uo pipefail
@@ -232,6 +232,66 @@ score_seeded "$NEW" "$T/seeded.json" 2>/dev/null
 check "seeded: recall over the defects somebody reached; skipped and unknown verdicts count as missed" \
   "$(jq -c '[.reported, .noticed, .missed, .not_exercised, .reachable, .recall]' "$NEW/seeded-score.json")" '[1,1,2,1,4,0.25]'
 check "seeded: one table row per planted defect" "$(grep -c '^| S' "$NEW/seeded-score.md")" "5"
+
+# --- the history: links do not depend on what the folders are called -------------------------
+
+# shellcheck source=lib/history.sh
+source "$DIR/lib/history.sh"
+(
+  APP_REPO="$T/app"
+  RUNS_DIR="$APP_REPO/qa/sessions"
+  HISTORY_DIR="$APP_REPO/qa/log/history"
+  S="$RUNS_DIR/20260102-030405"
+  mkdir -p "$S"
+  echo '{"version":"1.0","runs":[{"id":"p1","run":1,"steps":3,"outcome":"done","cost_usd":0.1}]}' >"$S/summary.json"
+  echo '{"personas":[{"id":"p1","name":"P, 30","language":"en","start_state":"fresh","tech_level":"low","summary":"s"}]}' >"$S/personas.json"
+  printf '# Synthesis\n\nSee [the shot](qa/sessions/20260102-030405/p1/run-1/shots/shot-001.png).\n' >"$S/synthesis.md"
+  archive_session "$S" 2>/dev/null
+  cat "$HISTORY_DIR/01-2026-01-02.md"
+) >"$T/history-out.md" 2>/dev/null
+check "history: screenshot links are rewritten relative to the history file" \
+  "$(grep -c '](../../sessions/20260102-030405/p1/run-1/shots/shot-001.png)' "$T/history-out.md")" "1"
+check "history: the raw-data link follows RUNS_DIR" \
+  "$(grep -c '](../../sessions/20260102-030405/)' "$T/history-out.md")" "1"
+
+# --- the isolation check, against a stand-in CLI -----------------------------------------------
+
+# The stand-in is a model that does what the probe asks: with the Read tool it
+# returns the content of the canary file named in the message, without it
+# nothing from disk. LEAK=1 makes it return the canary with no tool at all.
+APP="$T/iso-app"
+mkdir -p "$APP/persona-lab/config"
+cat >"$APP/persona-lab/config/config.sh" <<'EOF'
+APP_ID=com.example.selftest
+APP_REPO="$(cd "$CONFIG_DIR/../.." && pwd)"
+ANDROID_SERIAL=none
+EOF
+echo 'A public store listing.' >"$APP/persona-lab/config/brief.md"
+cat >"$T/stub-probe-claude" <<'EOF'
+#!/bin/bash
+[ "${1:-}" = --version ] && { echo stub; exit 0; }
+msg="$(cat)"
+tools='[]'
+reply='{"tools": [], "canary": "NONE"}'
+case " $* " in *' --tools Read '*) tools='["Read"]' ;; esac
+if [ "$tools" != '[]' ] || [ "${LEAK:-0}" = 1 ]; then
+  file="$(printf '%s' "$msg" | jq -r '.message.content[0].text' | sed -n 's/^1\. Read the file \(.*\) and quote.*/\1/p')"
+  reply="$(cat "$file" 2>/dev/null)"
+fi
+jq -cn --argjson tools "$tools" --arg cwd "$PWD" '{type: "system", subtype: "init", tools: $tools, mcp_servers: [], cwd: $cwd}'
+jq -cn --arg r "$reply" '{type: "result", total_cost_usd: 0, result: $r}'
+EOF
+chmod +x "$T/stub-probe-claude"
+(cd "$APP" && CLAUDE_BIN="$T/stub-probe-claude" bash "$DIR/verify-isolation.sh" persona-lab/config --out iso-out --with-control) >/dev/null 2>&1
+rc=$?
+check "isolation: holds, and the positive control leaks, with a relative --out" \
+  "$rc $(grep -c 'the canary leaked when Read was allowed' "$APP/iso-out/isolation.md" 2>/dev/null)" "0 1"
+(cd "$APP" && LEAK=1 CLAUDE_BIN="$T/stub-probe-claude" bash "$DIR/verify-isolation.sh" persona-lab/config --out "$APP/iso-leak") >/dev/null 2>&1
+rc=$?
+check "isolation: a persona call that returns the canary fails the check" \
+  "$rc $(grep -c '^- ❌ canary not leaked' "$APP/iso-leak/isolation.md" 2>/dev/null)" "1 1"
+check "isolation: the canary is removed from the repository afterwards" \
+  "$(ls "$APP/persona-lab/runs/.isolation-canary.txt" 2>/dev/null | wc -l | tr -d ' ')" "0"
 
 printf '\n%s passed, %s failed\n' "$PASS" "$FAIL"
 [ "$FAIL" = 0 ]

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Proves that a persona cannot read the app's repository.
 #
-#   bash persona-lab/engine/verify-isolation.sh <config-dir> [--out <dir>] [--with-control]
+#   bash engine/verify-isolation.sh <config-dir> [--out <dir>] [--with-control]
 #
 # Sends the persona call — the exact isolated_claude invocation the runner
 # uses, with a real persona system prompt — an explicit instruction to read a
@@ -44,7 +44,10 @@ while [ $# -gt 0 ]; do
   esac
 done
 OUT="${OUT:-$RUNS_DIR/isolation-$(date +%Y%m%d-%H%M%S)}"
-mkdir -p "$OUT"
+mkdir -p "$OUT" || die "cannot create $OUT"
+# Absolute from here on: the positive control reads the probe from $OUT after
+# it has changed into its sandbox, and a relative path would then point nowhere.
+OUT="$(cd "$OUT" && pwd)"
 resolve_claude
 
 # The canary lives inside the app repository, next to the runs (git-ignored),
@@ -142,7 +145,8 @@ if [ $CONTROL = 1 ]; then
       --input-format stream-json --output-format stream-json --verbose \
       --tools "Read" --allowedTools "Read(/$CANARY)" --strict-mcp-config --setting-sources "" \
       --no-session-persistence --model "$MODEL_PERSONA" --max-budget-usd "$MAX_BUDGET_PER_CALL" \
-      --system-prompt "$(cat "$OUT/system-prompt.md")") >"$OUT/control.jsonl" 2>/dev/null
+      --system-prompt "$(cat "$OUT/system-prompt.md")") >"$OUT/control.jsonl" 2>"$OUT/control.jsonl.stderr"
+  [ -s "$OUT/control.jsonl.stderr" ] || rm -f "$OUT/control.jsonl.stderr"
   rmdir "$sandbox" 2>/dev/null
   printf '\n## Positive control (Read tool deliberately enabled)\n\n' >>"$REPORT"
   if grep -q "$TOKEN" "$OUT/control.jsonl"; then

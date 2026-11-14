@@ -37,7 +37,7 @@ Write the result in language: {{LANG}}. Output the Markdown document with this s
 Personas × runs; how many reached their goals according to the outcome check (and, separately, how many only declared it), gave up, hit the limit; how many runs were tainted; the 3–5 most important conclusions.
 
 ## Problemy (od najważniejszych)
-For each issue: a heading that starts with its id in square brackets ([F-012] or [NEW-1]), then a short name and priority (P1 = blocks a need or recurs across personas; P2; P3), then: severity as reported, frequency ("Z/W person, X/Y przebiegów"), what happens, evidence (links to screenshots relative to the repo root, e.g. persona-lab/runs/<id>/<persona>/run-1/shots/shot-004.png), where in the code (screen/component paths), suggested direction of the fix.
+For each issue: a heading that starts with its id in square brackets ([F-012] or [NEW-1]), then a short name and priority (P1 = blocks a need or recurs across personas; P2; P3), then: severity as reported, frequency ("Z/W person, X/Y przebiegów"), what happens, evidence (links to screenshots relative to the repo root, e.g. {{RUN_DIR}}/<persona>/run-1/shots/shot-004.png), where in the code (screen/component paths), suggested direction of the fix.
 
 ## Życzenia i inspiracje
 Grouped the same way, each heading starting with its id ([F-…] or [NEW-…]), with frequency, who wanted it, and whether it fits or conflicts with the spec.

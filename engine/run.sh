@@ -1,7 +1,7 @@
 #!/bin/bash
 # persona-lab — persona-based usability testing on an Android emulator.
 #
-#   bash persona-lab/engine/run.sh <config-dir> [options]
+#   bash engine/run.sh <config-dir> [options]
 #
 # One command, in this order:
 #   1. preflight     device connected, claude CLI present, optional build/install
