@@ -60,6 +60,14 @@ load_config() {
   # The setup before the first turn (reset, reading the state) may take this
   # much longer than a turn before it counts as a stall.
   RESET_ALLOW_SECONDS="${RESET_ALLOW_SECONDS:-600}"
+  # The same for what follows the last turn: reading the end state, the
+  # persona's report, the judge. Three to five minutes on a healthy rig.
+  CLOSE_ALLOW_SECONDS="${CLOSE_ALLOW_SECONDS:-600}"
+  # Typing goes in one device call per word and per line break. A typing turn
+  # may take this long per call; with TYPE_SLOW_MIN_CALLS calls or more, a
+  # slower one is an incident of its own (verify.sh, slow_typing).
+  TYPE_CALL_SECONDS="${TYPE_CALL_SECONDS:-5}"
+  TYPE_SLOW_MIN_CALLS="${TYPE_SLOW_MIN_CALLS:-10}"
   SYNTHESIS_LANG="${SYNTHESIS_LANG:-pl}"
   SYNTHESIS_FOCUS="${SYNTHESIS_FOCUS:-}"
   RUNS_DIR="${RUNS_DIR:-$CONFIG_DIR/../runs}"
@@ -73,6 +81,14 @@ load_config() {
   if grep -q 'PERSONA-LAB-TEMPLATE' "$BRIEF_FILE"; then
     die "$BRIEF_FILE is still the template — write the brief first"
   fi
+}
+
+# strip_preamble <file> — drops what a model said before the document it was
+# asked for: everything above the first "# " heading. A file without such a
+# heading is left alone.
+strip_preamble() {
+  grep -q '^# ' "$1" || return 0
+  perl -ni -e 'print if $on ||= /^# /' "$1"
 }
 
 # engine_version — the commit this engine is at, with "+" when it has

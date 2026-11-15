@@ -111,11 +111,15 @@ run_persona() {
   : >"$out/actions.log"
   # The setup is timed too: a host that slept through the reset wakes up with
   # the network down, and the persona's first turns would pay for it.
-  printf 'reset\t%s\t0\t%s\t%s\n' "$t_run_start" "$((started_at - t_run_start))" "$RESET_ALLOW_SECONDS" >"$out/steps/timing.tsv"
+  # So is a stall the previous run left behind, when this one began right after it.
+  {
+    carried_stall "${LAST_STALL:-}" "$t_run_start"
+    printf 'reset\t%s\t0\t%s\t%s\n' "$t_run_start" "$((started_at - t_run_start))" "$RESET_ALLOW_SECONDS"
+  } >"$out/steps/timing.tsv"
 
   while [ "$step" -lt "$max_steps" ]; do
     step=$((step + 1))
-    local sid shot hints prompt reply json action did rc c t_start t_reply think allow
+    local sid shot hints prompt reply json action did rc c t_start t_reply think allow calls act
     sid="$(printf 'shot-%03d' "$step")"
     shot="$out/shots/$sid.png"
     t_start="$(date +%s)"
@@ -194,9 +198,16 @@ Reply with one JSON object only."
       did="$(perform_action "$action")"
       rc=$?
     fi
-    # Typing is paced like a person's, so a long text legitimately takes long.
-    allow="$(jq -r 'if .type == "type" then ((.text // "") | split(" ") | length) * 2 else 0 end' <<<"$action")"
-    printf '%s\t%s\t%s\t%s\t%s\n' "$sid" "$t_start" "$think" "$(($(date +%s) - t_reply))" "$allow" >>"$out/steps/timing.tsv"
+    # Typing is paced like a person's, so a long text legitimately takes long:
+    # the allowance grows with the device calls it takes.
+    calls=0
+    [ "$(jq -r .type <<<"$action")" != type ] || calls="$(type_calls "$(jq -r '.text // ""' <<<"$action")")"
+    allow=$((calls * TYPE_CALL_SECONDS))
+    act=$(($(date +%s) - t_reply))
+    printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$sid" "$t_start" "$think" "$act" "$allow" "$calls" >>"$out/steps/timing.tsv"
+    if [ "$calls" -ge "$TYPE_SLOW_MIN_CALLS" ] && [ "$act" -gt "$allow" ] && [ "$act" -le $((STALL_SECONDS + allow)) ]; then
+      log "WARNING: $sid typed $calls words and lines in ${act}s — too slow to trust the text, the run is marked as tainted"
+    fi
     printf '%s\t%s\t%s\t%s\n' "$sid" "$(date +%H:%M:%S)" "$action" "$did" >>"$out/actions.log"
     jq -c --arg did "$did" --arg rc "$rc" '. + {performed: $did, performed_ok: ($rc != "1")}' \
       "$out/steps/$sid.json" >"$out/steps/$sid.json.tmp" && mv "$out/steps/$sid.json.tmp" "$out/steps/$sid.json"
@@ -220,6 +231,8 @@ Reply with one JSON object only."
 
   sleep 1
   video_stop
+  local t_close
+  t_close="$(date +%s)"
 
   # --- the end state: what is really in the app now ---
   if wants_end_state "$persona"; then
@@ -264,8 +277,12 @@ Reply with one JSON object only."
     fi
   fi
   outcome_verdict "$expect_json" "$judge_json" "$outcome" >"$out/outcome.json"
+  # Everything since the last turn is timed as one piece: a host that slept
+  # through the report or the judge is a stall like any other.
+  printf 'close\t%s\t0\t%s\t%s\n' "$t_close" "$(($(date +%s) - t_close))" "$CLOSE_ALLOW_SECONDS" >>"$out/steps/timing.tsv"
   taint="$(run_taint "$out")"
   [ -n "$taint" ] || taint="[]"
+  LAST_STALL="$(run_last_stall "$out")" # for the next run of this session
 
   jq -n --arg id "$id" --arg name "$name" --argjson run "$run_no" --arg state "$state" --arg lang "$lang" \
     --argjson steps "$step" --arg outcome "$outcome" --arg reason "$outcome_reason" \

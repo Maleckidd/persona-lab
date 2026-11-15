@@ -154,6 +154,7 @@ Table: real-tester point | tester | caught by personas (tak/częściowo/nie) | m
     repo_claude "$MODEL_SYNTHESIS" "$MAX_BUDGET_SYNTHESIS" "$session/synthesis-prompt.md" "$session/synthesis.json" >"$session/synthesis.md"
   fi
   [ -s "$session/synthesis.md" ] || die "synthesis produced nothing — see $session/synthesis.json"
+  strip_preamble "$session/synthesis.md"
   log "synthesis → $session/synthesis.md"
 
   # The ledger. A session on a seeded build stays out of it: its findings

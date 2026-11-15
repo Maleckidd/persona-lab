@@ -15,7 +15,7 @@ Run a persona-lab session for this app. The engine is a clone of the persona-lab
 4. When it finishes, read `persona-lab/runs/<session>/synthesis.md` (and `isolation/isolation.md`) and give the user:
    - whether isolation held,
    - personas × runs and their outcomes (`summary.json`), plus total cost. Report two numbers, never one: how many runs the persona declared done (`outcome`) and how many the app's end state confirms (`verified: met`). Name every run with `self_report: overclaimed`,
-   - runs with `tainted: true` (a rig incident: the host slept or a call hung) and what was discarded because of them,
+   - runs with `tainted: true` (a rig incident: the host slept, a call hung, typing ran too slowly to trust, or the run began right after a stall) and what was discarded because of them,
    - the top problems and wishes from the synthesis, with their ledger ids and links to the files,
    - what the ledger says changed: findings that came back after being marked fixed (`regressed`) and fixes that held (`verified`) — `persona-lab/history/findings.md`,
    - the calibration result, if `persona-lab/config/calibration/real-testers.md` is filled or the session ran with `--seeded`.

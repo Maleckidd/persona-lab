@@ -130,6 +130,18 @@ both failed attempts are among its suspect steps. The engine also starts
 `caffeinate` itself and waits 30 s after a stall before touching the app again;
 neither stops the sleep of a closed lid.
 
+Two more incidents come from a session that ran through a night with the lid
+closed. Typing goes in one device call per word and per line break, and a
+typing turn that averages more than `TYPE_CALL_SECONDS` (5) a call is marked
+`slow_typing`: at 5.8 s a call the emulator lost letters in the middle of
+words, at up to 4.6 s ten long texts arrived whole. And a run that starts
+within three minutes of a stall in the run before it is marked `after_stall`
+as a whole, because its own setup takes longer than the window in which turns
+would be suspect. That session had a run begin four seconds after the host
+woke up and meet an app that stopped responding; the same step worked in the
+next run. The time after the last turn (end state, report, judge) is recorded
+too. It used to be invisible: two hours of sleep there left no trace.
+
 **The gestures.** A persona with `"avoids": ["long_press"]` doesn't get that
 action in its list, and the engine refuses it if the model tries anyway. A
 model playing a low-tech person still knows every platform convention; without
@@ -263,7 +275,11 @@ caffeinate -i bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config-import \
 
 `caffeinate` doesn't stop the sleep of a closed MacBook lid. A session pauses
 there and resumes on wake, and a network call right after waking can fail, so
-keep the lid open (it cost one false "couldn't load the page" in iteration 7).
+keep the lid open (it cost one false "couldn't load the page" in iteration 7,
+and twelve hours in a later session: the run in progress crawled through the
+night on the system's maintenance wakes). For a session left overnight,
+`sudo pmset -a disablesleep 1` holds a closed lid too; set it back to `0`
+afterwards.
 
 A study of another *kind* can replace the instructions too. A file in
 `<config>/prompts/` wins over the engine's prompt of the same name (`persona.md`,

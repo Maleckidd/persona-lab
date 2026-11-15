@@ -25,6 +25,9 @@ SYNTHESIS_LANG=en
 STALL_SECONDS=180
 POST_STALL_SECONDS=180
 RESET_ALLOW_SECONDS=600
+CLOSE_ALLOW_SECONDS=600
+TYPE_CALL_SECONDS=5
+TYPE_SLOW_MIN_CALLS=10
 JUDGE_OUTCOME=1
 MODEL_SCORER=stub
 MAX_BUDGET_SYNTHESIS=1
@@ -103,6 +106,64 @@ check "taint: runs recorded before timing.tsv, across midnight" \
 mkdir -p "$T/clean/steps"
 row shot-001 1000 9 1 0 >"$T/clean/steps/timing.tsv"
 check "taint: a clean run has none" "$(run_taint "$T/clean")" '[]'
+
+# Typing: one device call per word and one per line break, as type_text makes
+# them. Counted on spaces alone, "starter\n- 50" was one word and a recipe of
+# eleven lines got the allowance of a sentence.
+check "typing: device calls are words plus line breaks" \
+  "$(type_calls "one two") $(type_calls "$(printf '# Dough\n- 400 g flour\n\n- 10 g salt')") $(type_calls "")" "2 13 0"
+
+{
+  row reset 1000 0 120 600
+  row shot-001 1120 9 283 305 61   # 51 words on 11 lines at 4.6 s a call: slow, and whole
+  row shot-002 1420 7 233 200 40   # 5.8 s a call: this is where letters went missing
+  row shot-003 1660 6 30 15 3      # three words in 30 s: too few calls to judge a rate
+  row shot-004 1700 8 500 200 40   # typing that hung: a stall, not slow typing
+  row shot-005 2210 8 1 0 0
+  row close 2220 0 250 600
+} >"$T/run/steps/timing.tsv"
+check "taint: typing slower than the rate the rig can keep is its own incident" \
+  "$(run_taint "$T/run" | jq -c '[.[] | [.kind, .at, .seconds, (.suspect_steps | join(" "))]]')" \
+  '[["slow_typing","shot-002",233,"shot-002"],["stall","shot-004",508,"shot-004 shot-005"]]'
+
+# The report, the end state and the judge come after the last turn. A host
+# that sleeps there used to leave no trace: two hours, and a clean run.
+{
+  row reset 1000 0 120 600
+  row shot-001 1120 9 1 0 0
+  row close 1130 0 7644 600
+} >"$T/run/steps/timing.tsv"
+check "taint: a stall after the last turn is recorded" \
+  "$(run_taint "$T/run" | jq -c '[.[] | [.kind, .at, .seconds, (.suspect_steps | join(" "))]]')" \
+  '[["stall","close",7644,"close"]]'
+check "taint: where and when the last stall of a run ended" "$(run_last_stall "$T/run")" "8774${TAB}7644"
+check "taint: a run without a stall has no last one" "$(run_last_stall "$T/clean")" ""
+
+# The next run starts on a rig that has just stalled. Its setup takes minutes,
+# so no turn falls into the three minutes after the stall, and the run used to
+# come out clean.
+{
+  row after 8774 7644
+  row reset 8778 0 256 600
+  row shot-001 9034 9 1 0 0
+  row shot-002 9500 9 1 0 0
+  row close 9600 0 250 600
+} >"$T/run/steps/timing.tsv"
+check "taint: a run that starts right after a stall is suspect as a whole" \
+  "$(run_taint "$T/run" | jq -c '[.[] | [.kind, .at, .seconds, (.suspect_steps | join(" "))]]')" \
+  '[["after_stall","reset",7644,"shot-001 shot-002"]]'
+check "taint: the carried stall is not this run's own last stall" "$(run_last_stall "$T/run")" ""
+check "taint: carried over within the window, not after it" \
+  "$(carried_stall "8774${TAB}7644" 8778 | cut -f1) [$(carried_stall "8774${TAB}7644" 9000)] [$(carried_stall "" 9000)]" "after [] []"
+
+# The synthesis is a model's reply, and a model sometimes says a sentence
+# before it starts. That sentence went into the report and into the history.
+printf 'I have everything I need. Writing the synthesis.\n\n# Synthesis\n\n## Summary\n# not a heading we cut at\n' >"$T/pre.md"
+strip_preamble "$T/pre.md"
+check "synthesis: the report starts at its first heading" "$(head -1 "$T/pre.md") $(wc -l <"$T/pre.md" | tr -d ' ')" "# Synthesis 4"
+printf 'No heading at all.\nSecond line.\n' >"$T/pre.md"
+strip_preamble "$T/pre.md"
+check "synthesis: a reply without a heading is kept whole" "$(wc -l <"$T/pre.md" | tr -d ' ')" "2"
 
 # --- the end state -----------------------------------------------------------------
 

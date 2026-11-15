@@ -83,6 +83,7 @@ UI_HINTS=text                # none | text | full
 SYNTHESIS_LANG=en
 SYNTHESIS_FOCUS=""           # extra instruction for a study aimed at one feature
 STALL_SECONDS=180            # a turn slower than this is a rig incident (host asleep, hung call)
+TYPE_CALL_SECONDS=5          # typing slower than this per word or line break is one too (letters get lost)
 
 # Phrases that exist only in the repo's code/docs (class names, internal terms).
 ISOLATION_SENTINELS=""
