@@ -1,397 +1,89 @@
 # persona-lab
 
-Usability testing with simulated users. Personas fitted to the app's public
-description use the real app on an Android emulator the way a person with
-their needs and temperament would. The output is their problems and wishes,
-each backed by a screenshot, plus one synthesis that groups everything across
-personas and runs and maps it onto the code.
+[![selftest](https://github.com/Maleckidd/persona-lab/actions/workflows/selftest.yml/badge.svg)](https://github.com/Maleckidd/persona-lab/actions/workflows/selftest.yml)
+
+Usability testing with simulated users: personas fitted to an app's public
+description use the real app on an Android emulator the way a person with their
+needs and temperament would, and the engine checks their reports against what
+the app actually stored.
+
+![One run: three turns and the engine's verdict](docs/one-run.png)
+
+That run is the whole idea in one place. The persona left believing the save
+had failed. The engine read the app and found the recipe saved correctly, and
+recorded the disagreement. A report written by the persona alone — which is
+what you get from asking a model to "test this app" — would have recorded a bug
+that does not exist and missed the one that does: a saved recipe you cannot
+find.
+
+## What the engine does not take on trust
+
+A prompt can ask a model to behave; only the engine can make sure. Each row is
+a way the result could be worthless, and what is done about it.
+
+| What could make the result worthless | Control | How the control is itself checked | Where it stands |
+|---|---|---|---|
+| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary each session | positive control: the same probe with a Read tool allowed must leak the canary | passed every session; [the check, with its control](sample/isolation/isolation.md) |
+| the persona believes it succeeded and it did not | the engine reads the app's stored state before and after, and judges each need against it: `verified`, `overclaimed` | selftest cases; every alarm checked by hand | `underclaimed` has fired on real runs (the picture above). `overclaimed` never has — [limitations](docs/limitations.md#overclaimed-has-never-fired-on-a-real-contradiction) |
+| the host slept, a call hung, the rig mangled the typing | per-turn timing; the run is marked `tainted` and the suspect turns are named | selftest; replayed on the logs of an earlier session | 3 of 10 runs flagged in the sample session; [the synthesis throws one finding out because of it](sample/) |
+| the personas walk past what is wrong | recall on deliberately planted defects (`--seeded`) | the manifest is hidden from the personas and from the scoring input | **not measured yet** — [limitations](docs/limitations.md#no-recall-number) |
+| a fix is reported as holding and is not | the findings ledger: `fixed` → `verified` / `regressed` | selftest | **no loop closed yet** — [limitations](docs/limitations.md#no-closed-loop-in-the-ledger) |
+
+The last two rows are the honest gaps, and
+**[docs/limitations.md](docs/limitations.md)** has the rest of them: what the
+outcome check does badly, what the rig still gets wrong, and what a session
+costs. Read it before you read a result.
+
+## One real session
+
+**[`sample/`](sample/)** holds two runs of a real session against a published
+app, with screenshots, the state reads, the per-need verdicts and the synthesis
+— a clean case and a counter-example the synthesis rejects as a rig artifact.
+Nobody can reproduce a session from a clone, so that directory is the evidence.
+
+The tool was built for a Polish-language study, and what the engine writes
+stays in the language the study ran in: the synthesis, the reports and
+`actions.log` in `sample/` are in Polish. `summary.json` and `outcome.json` are
+not, and `sample/README.md` works both runs through in English.
+
+## Running it
+
+The engine is a clone anywhere on the machine and holds no state; the config,
+`runs/` and `history/` live in the app's repository, where the synthesis runs
+read-only. Nothing in `engine/` ever names an app.
 
 ```bash
-# run from the app's repository; PERSONA_LAB_ENGINE is engine/ in a clone of this one
-bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config            # full session
+# from the app's repository; PERSONA_LAB_ENGINE is engine/ in a clone of this one
+bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config                      # full session
 bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --count 1 --runs 1   # smoke run
 ```
 
 …or `/persona-test [options]` in Claude Code: copy
 `integrations/claude-code/persona-test.md` to the app's `.claude/commands/`.
 
-## Layout
+Needs macOS, `adb` with an emulator, `jq`, `perl`, `python3`, `ffmpeg`, and the
+`claude` CLI authenticated for non-interactive use. A full session on the
+example app is about 2 h and $7; a smoke run about 15 min and $1.50.
 
-The engine is a clone anywhere on the machine and holds no state. The config,
-`runs/` and `history/` stay in the app's repository: the synthesis runs there,
-read-only, and cites the session by a path relative to it.
+`bash engine/selftest.sh` checks the engine's own logic — rig incidents,
+outcome verdicts, the evidence rule, the ledger, the comparison, the seeded
+score, the isolation check against a stand-in CLI — in a few seconds, with no
+device and no model.
 
-This repository:
+## Reading further
 
-| Path | What |
+| | |
 |---|---|
-| `engine/` | the tool: `run.sh`, `verify-isolation.sh`, `selftest.sh`, `lib/`, `prompts/`, `templates/`. It never names an app |
-| `examples/keeptaste/` | the configs of the app it was built on, as a snapshot (below) |
-| `integrations/claude-code/` | the `/persona-test` command for Claude Code |
+| [docs/limitations.md](docs/limitations.md) | what this does badly, and what has not been measured |
+| [docs/how-it-works.md](docs/how-it-works.md) | the session step by step, the turn loop, isolation, the rig checks, the output tree, requirements |
+| [docs/outcome-check.md](docs/outcome-check.md) | reading the app's state instead of the persona's word |
+| [docs/writing-a-config.md](docs/writing-a-config.md) | setting this up for your own app |
+| [docs/ledger.md](docs/ledger.md) | the findings ledger across sessions, and comparing two of them |
+| [docs/calibration.md](docs/calibration.md) | recall on seeded defects (`--seeded`) |
+| [docs/focused-studies.md](docs/focused-studies.md) | studying one feature, with hand-written personas |
+| [docs/research-team.md](docs/research-team.md) | swapping the users for a simulated research team |
+| [examples/keeptaste/](examples/keeptaste/README.md) | the configs of the app this was built on |
 
-The app's repository, by the convention the defaults follow:
-
-| Path | What |
-|---|---|
-| `persona-lab/config/` | the app's setup: `config.sh`, `brief*.md`, `personas.override.md`, `calibration/`. Start from `engine/templates/` |
-| `persona-lab/config-<study>/` | focused studies built on `config/` (below) |
-| `persona-lab/history/` | one file per session, plus the findings ledger (`findings.json`, `findings.md`); tracked |
-| `persona-lab/runs/` | session output, git-ignored |
-
-`runs/` and `history/` are the config's siblings unless `RUNS_DIR` and
-`HISTORY_DIR` say otherwise. Nothing depends on the folder being called
-`persona-lab`.
-
-The app's repository does not pin a version of the engine. Each session writes
-the engine commit it ran on into its `summary.json` and its history entry, with
-a `+` when the engine had uncommitted changes.
-
-An app detail goes in the app's `config/config.sh` (or a hook there), never in
-the engine.
-
-`bash engine/selftest.sh` checks the engine's own logic (rig incidents, outcome
-verdicts, the evidence rule, the ledger, the comparison, the seeded score, the
-history links, the isolation check against a stand-in CLI) in a few seconds,
-with no device and no model. Run it after any change under `engine/`.
-
-## How it works
-
-1. **Preflight** — the device from `config.sh` is connected; optional
-   `BUILD_CMD` / `APK` install.
-2. **Isolation check** — `verify-isolation.sh` (below). If it fails, nothing runs.
-3. **Personas** — generated by a model that sees only the brief (and the
-   optional hints in `personas.override.md`): needs phrased as goals, context
-   of use, tech level, patience budget, start state, language, font scale /
-   dark mode. Stored as `personas.json`; reuse a set with `--personas-file`.
-4. **Runs** — per persona × run: device profile (font scale, dark mode) →
-   `reset_app` hook → the app's state is read → video starts → the loop → video
-   stops → the app's state is read again → the persona writes its report → the
-   engine checks its evidence, the outcome and the rig (below).
-5. **Synthesis** — one model call that *does* have the repository (read-only:
-   Read/Grep/Glob) groups, dedupes and prioritises findings by how many
-   personas hit them, maps them to screens and components, judges the store
-   listing's promises against what happened, and matches every finding with
-   the ledger of earlier sessions.
-6. **Calibration** — only with `--seeded`: how many defects planted in this
-   build the personas caught.
-
-### What the engine does not take on trust
-
-A prompt can ask a model to behave; only the engine can make sure. Three things
-used to be asked for and are now enforced or checked.
-
-**The outcome.** `done` is what the persona believes. With a `capture_state`
-hook in the config the engine reads what is actually stored in the app, after
-the reset and again after the run, both times after a restart so an unsaved
-form doesn't count. The lines the second read adds are what the persona did.
-Two checks use them:
-
-- the persona's own `expect` patterns (hand-written personas only):
-  `{"need": 1, "label": "the cake is saved", "matches": "piernik"}`,
-  `{"need": 3, "label": "no private notes left", "lacks": "buziaki"}`. They
-  are regular expressions and involve no model;
-- a judge: one tool-free model call, isolated like a persona, that gets the
-  needs, the materials and both states and answers per need `met`, `partly`,
-  `not_met` or `unverifiable`, and, from the persona's closing words alone,
-  whether the persona believes that need was achieved (`claimed`).
-
-`summary.json` then has `verified` (`met` / `partly` / `not_met` /
-`unverifiable`, or `none` when nothing was checked) and `self_report`.
-`overclaimed` means the persona left with a belief the end state contradicts:
-it stopped with `done`, and a need it does not itself call a failure has
-nothing in the app, or one of the owner's patterns for such a need fails. That
-is the most expensive kind of usability problem (the user leaves believing it
-worked), and no report written by the persona can contain it. The synthesis
-reports each one. The judge is a model reading a screen capture, so the
-synthesis is told to open `state.md` itself before repeating a verdict.
-
-Two things are deliberately not an overclaim. `done` with a reason that says
-"I only got the eggs onto the list" claims nothing about the rest: the action
-means "I am finished, successfully or not". And `partly` alone lowers
-`verified` without flagging the run, because the judge gives it for an
-inference it could not confirm as readily as for a missing step. The first
-session with the check (iteration 11) flagged both of its runs under the older
-rule, "done and not fully met", and neither persona had believed anything
-false.
-
-The check sees only what `capture_state` reads. A part of the app the hook
-does not visit comes out as `not_met` for every need that lives there, so when
-a verdict looks wrong, look at what the hook covers before blaming the judge.
-
-**The rig.** A turn that takes minutes instead of seconds means the host slept
-or a call hung. The engine records the time of every turn and of the setup
-before the first one; a turn slower than `STALL_SECONDS` (180) marks the run
-`tainted`, and the turns that start within three minutes after it are listed as
-`suspect_steps`. A failure seen only there (a network error right after a wake)
-is an artifact, and the synthesis is told to discard it unless a clean run
-shows the same. Run on the logs of iteration 7, it flags two runs, one of them
-the run whose "couldn't load the page" was traced by hand to the Mac sleeping;
-both failed attempts are among its suspect steps. The engine also starts
-`caffeinate` itself and waits 30 s after a stall before touching the app again;
-neither stops the sleep of a closed lid.
-
-Two more incidents come from a session that ran through a night with the lid
-closed. Typing goes in one device call per word and per line break, and a
-typing turn that averages more than `TYPE_CALL_SECONDS` (5) a call is marked
-`slow_typing`: at 5.8 s a call the emulator lost letters in the middle of
-words, at up to 4.6 s ten long texts arrived whole. And a run that starts
-within three minutes of a stall in the run before it is marked `after_stall`
-as a whole, because its own setup takes longer than the window in which turns
-would be suspect. That session had a run begin four seconds after the host
-woke up and meet an app that stopped responding; the same step worked in the
-next run. The time after the last turn (end state, report, judge) is recorded
-too. It used to be invisible: two hours of sleep there left no trace.
-
-**The gestures.** A persona with `"avoids": ["long_press"]` doesn't get that
-action in its list, and the engine refuses it if the model tries anyway. A
-model playing a low-tech person still knows every platform convention; without
-this it "discovers" what a real one never would. The patience cap works the
-same way. Only `long_press` and `swipe` can be ruled out.
-
-### The findings ledger
-
-`history/findings.json` (tracked, with a readable `findings.md` next to it)
-holds every finding under a stable id, with a status and each session that saw
-it. The synthesis gets the ledger in its prompt, tags each of its findings with
-the id it matches or `NEW-n`, and for the known ones it did not reproduce says
-whether a persona went through that flow (`not_reproduced`) or nobody did
-(`not_exercised`). The engine merges that and assigns the new ids.
-
-```bash
-bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --finding F-012 fixed "commit abc123"
-```
-
-| Status | Set by | Meaning |
-|---|---|---|
-| `open` | engine | reported, nothing decided |
-| `fixed` | owner | a fix went in, not confirmed yet |
-| `verified` | engine | marked fixed, then a later session went through the flow and it did not happen |
-| `regressed` | engine | marked fixed (or verified), then a later session reproduced it |
-| `wontfix`, `artifact` | owner | kept for the record; a new sighting doesn't reopen it |
-
-Only a session started after the owner's verdict can confirm or refute it.
-Re-synthesizing a session replaces what that session contributed and keeps its
-ids. The ledger starts with the first session synthesized after it was added;
-`--synthesize-only` on an older session adds that session's findings too (it
-costs a synthesis). A confirmed, deterministic finding belongs in a unit or E2E
-test as well: the ledger says whether a fix held in a later study, a test says
-so on every commit.
-
-### Comparing two sessions
-
-```bash
-bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --compare \
-  persona-lab/runs/<session-A> persona-lab/runs/<session-B> > compare.md
-```
-
-The same personas (`--personas-file`) on two builds, or on two store listings
-(two config directories with different briefs). No model call: outcomes,
-verified outcomes, steps and rig incidents per persona, and the ledger ids that
-are in one session and not in the other. Read it as what changed, not as a
-measurement: one run flipping from `give_up` to `done` proves nothing.
-
-### Calibration on seeded defects
-
-How much of what is wrong do the personas catch? Plant a handful of usability
-defects in a build, list them in a manifest (`engine/templates/seeded.json`),
-run a normal session with `--seeded <manifest>`, and the engine reports recall:
-the mutation-testing idea applied to a usability test.
-
-- The personas can't see any file, and the synthesis is written before the
-  scoring. Recall is measured on the personas' reports, never on the synthesis,
-  because the synthesis reads the repository and could come across the manifest.
-- Per defect: `reported` (in a report), `noticed` (only in the turn notes: the
-  persona ran into it and didn't report it), `missed`, or `not_exercised`
-  (nobody got there; left out of the denominator).
-- A seeded session is archived in `history/` but stays out of the ledger.
-- It measures misses, not false alarms: on a real app nobody knows the full
-  list of true problems, so a finding outside the manifest is not a false one.
-- With six defects the number is coarse. Use it to compare engine versions,
-  models and persona sets against each other, on the same manifest.
-
-For KeepTaste this is `examples/keeptaste/config-seeded/`.
-
-### The loop, and why the persona cannot see the repo
-
-The persona never runs a command. Each turn the **engine** takes a screenshot
-(downscaled to 540 px wide) and, by default, the visible texts with their
-positions from `uiautomator dump`, then calls the model with: the persona's
-profile and brief (system prompt), its own notes from earlier turns, and the
-screenshot. The model answers with one JSON object — what it sees, expects,
-does, what surprised it, and one action (`tap`, `long_press`, `swipe`,
-`scroll`, `type`, `back`, `enter`, `wait`, `done`, `give_up`). The engine
-validates the action, performs it with `adb shell input`, and repeats.
-
-Every persona call (and the persona generator) runs as
-`claude -p --tools "" --strict-mcp-config --setting-sources "" --system-prompt …`
-in a fresh empty directory outside the repository (`--bare` too when
-`ANTHROPIC_API_KEY` is set). With no tools there is nothing to read files with;
-isolation comes from how the call is built, not from permission rules. The
-check proves it each session: the persona is told to read a canary file
-written into the repo moments before, `SPEC.md` and `CLAUDE.md`, and to quote
-any project instructions it has. It passes only if the session had zero tools
-and zero MCP servers, made no tool call, the canary token and the config's
-`ISOLATION_SENTINELS` appear nowhere in the transcript, and the sandbox stayed
-empty. `--with-control` adds a positive control (the same probe *with* Read
-allowed must leak the canary), which proves the check can fail.
-
-Without `--bare` (subscription login) the CLI still adds a little context of its
-own to every persona call even with `--system-prompt`: the signed-in account's
-email, the date and the sandbox working directory. None of it is about the app.
-With `ANTHROPIC_API_KEY` and `--bare` the call is fully explicit.
-
-Developer identifiers never reach the persona: from the UI dump only visible
-text and bounds survive (`resource-id`/testID, class and package are dropped).
-`UI_HINTS=full` also passes accessibility labels — what a screen-reader user
-hears. That's off by default, because a sighted user can't read an icon's
-label and passing it would hide "what does this icon do?" problems.
-`UI_HINTS=none` leaves the screenshot alone.
-
-Limits the persona is told about, so it does not report them as app bugs:
-typing goes through `adb shell input text`, which can't do Polish
-diacritics (they are typed without accents); the rig can't take photos or
-switch apps.
-
-What a persona already has on the phone is set up by the config, not typed:
-`clipboard_set <file>` (full Unicode, through a one-button page in Chrome on
-the emulator; it also turns off Chrome's first-run screens) and
-`gallery_add <image>`. Photos stay in the gallery after the study that added
-them, so `gallery_clear` removes them where another study's photo would steer
-this one. The optional `state_ready` hook runs after the last cold
-restart, for anything that restart would lose, like a share intent.
-
-### Focused studies
-
-A study of one feature gets its own config directory next to `config/` that
-sources the base one and overrides what differs: see
-`examples/keeptaste/config-import/`. Personas
-there are written by hand, because each one has to match the materials on the
-device, and `SYNTHESIS_FOCUS` adds an instruction to the synthesis.
-
-```bash
-caffeinate -i bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config-import \
-  --personas-file persona-lab/config-import/personas.json
-```
-
-`caffeinate` doesn't stop the sleep of a closed MacBook lid. A session pauses
-there and resumes on wake, and a network call right after waking can fail, so
-keep the lid open (it cost one false "couldn't load the page" in iteration 7,
-and twelve hours in a later session: the run in progress crawled through the
-night on the system's maintenance wakes). For a session left overnight,
-`sudo pmset -a disablesleep 1` holds a closed lid too; set it back to `0`
-afterwards.
-
-A study of another *kind* can replace the instructions too. A file in
-`<config>/prompts/` wins over the engine's prompt of the same name (`persona.md`,
-`report.md`, `synthesis.md`, `generator.md`), and `EVIDENCE_SECTIONS` names the
-report headings whose bullets need a screenshot.
-
-### Research team
-
-`examples/keeptaste/config-research/` swaps the users for a simulated research team, to ask where
-the app could go rather than whether a task works. The team must not know the
-product's intended limits, or it stays inside them, so nothing it reads is
-written from the spec. Weighing its ideas against the spec is the owner's job,
-after the study.
-
-```bash
-caffeinate -i bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config-research \
-  --personas-file persona-lab/config-research/personas.json
-```
-
-1. **Desk research** — runs whenever a config has `prompts/desk-research.md`. One
-   agent with `WebSearch`/`WebFetch` and nothing else, in an empty directory,
-   gets a topic, not the app or its name, and writes `desk-research.md`, a
-   dossier of signals with numbered sources. `--dossier-file` reuses one from an
-   earlier session.
-2. **Hands-on** — seven specialists, each with a frame-breaking lens: rival
-   founder, kitchen anthropologist, category designer, designer from other
-   industries, business-model inventor, futurist, researcher of extreme users.
-   Personas are still tool-free and can't see the repo. They know the app from
-   one neutral sentence, and the dossier reaches them as text in the system
-   prompt (`{{DOSSIER}}`). They report `Obserwacje`, which need a screenshot, and
-   `Pomysły`, which don't and may ignore what the app is today.
-3. **Synthesis** — the lead researcher keeps the outliers, cross-breeds ideas,
-   and writes alternative futures, an idea portfolio and cheap real-world tests.
-   A change to today's app is a price to state, never a veto.
-
-**Scoped synthesis.** With `SYNTHESIS_SCOPE` set, the synthesis agent doesn't run
-in the repository. It runs in a throwaway copy of the listed paths, after the
-config's `scope_scrub` (here: comments removed, because they carry the spec's
-reasoning), with no settings and no pre-approved tools, so reads outside it are
-refused and no `CLAUDE.md` or memory loads. `verify-isolation.sh` proves this
-before each session: told to read a canary inside the copy, a canary in the repo
-and the `SCOPE_FORBIDDEN` files, the agent must get only the first. The session's
-`scope-audit.txt` records what the real synthesis tried, and a forbidden file in
-its transcript stops the session.
-
-Simulated specialists are not users, and nothing here measures demand. Treat
-the output as ideas to test on real people; the report ends with how.
-
-### Patience and cost
-
-A persona has its own patience budget (`patience.max_steps`,
-`max_failed_attempts`) and is told to give up like the real person would. On
-top of that `MAX_STEPS` is a hard cap per run, and every model call has
-`--max-budget-usd`. Each turn is a stateless call (screenshot + compact notes),
-so cost per turn stays flat instead of growing with history. The cost of every
-run is in its `summary.json` (with a subscription login it's a notional figure).
-
-## Output
-
-```
-runs/<session-id>/
-  isolation/isolation.md         the isolation check (+ transcripts)
-  personas.json                  the personas of this session
-  desk-research.md               the dossier, in studies that have one
-  <persona-id>/run-<n>/
-    report.md                    the persona's report: Problemy (with severity) / Życzenia i inspiracje
-                                 — every point cites [shot-NNN]; uncited ones go to "Odrzucone"
-    think-aloud.md               every turn: screenshot → sees / expects / does / surprised → action
-    shots/shot-NNN.png           what the persona saw at turn NNN
-    video.webm                   the full run, real time (emulator console recorder)
-    video.mp4                    the same with the waiting cut down (still frames dropped)
-    actions.log, summary.json    raw actions; outcome, steps, cost, time, and the engine's checks:
-                                 verified, self_report, tainted, taint
-    state-before.md, state.md    what was stored in the app before and after the run
-    state-new.md                 the lines the run added: what the persona really did
-    outcome.json                 per need: met / partly / not_met / unverifiable, with a quote;
-                                 the result of each "expect" pattern
-    steps/                       per-turn prompts and transcripts, timing.tsv (debugging)
-  summary.json                   all runs
-  synthesis.md                   the combined report, findings tagged with their ledger ids
-  findings.json                  this session's findings as the ledger took them
-  seeded-score.md, .json         recall on planted defects (sessions run with --seeded)
-```
-
-The outcome check adds two reads of the app's state and one model call (the
-judge) to every run. A read is slow because each look at the screen is a UI
-dump of 3–4 seconds: on KeepTaste's demo library one read takes a little over
-three minutes (about 200 s measured on 2026-11-12, 50 s of it the four
-cookbooks), so a run in that state is six to seven minutes longer than without
-the hook. A fresh install has less to read.
-
-Every synthesis is also archived to **`history/`** — tracked in git, unlike
-`runs/` — as `NN-YYYY-MM-DD.md` (iteration number, date, app version, outcomes,
-cost, personas, then the synthesis), with `history/README.md` as the index.
-Re-synthesizing a session updates its own entry; a new session gets the next
-number. `run.sh <config> --archive-only <session-dir>` rewrites one entry.
-
-## Requirements
-
-- macOS (`sips`), `adb`, `jq`, `perl`, `python3` (only for `clipboard_set`),
-  `ffmpeg` (video compacting only).
-- An **emulator** for video (`adb emu screenrecord`; `adb shell screenrecord`
-  only gets one frame on the emulator). Start it with `-gpu host`, or the video
-  drops to a few fps. Runs on a real device work, just without video.
-- The `claude` CLI on PATH (or `CLAUDE_BIN=…`), authenticated in a way a
-  non-interactive process can use: `ANTHROPIC_API_KEY` (recommended — enables
-  `--bare`) or a `claude setup-token` login. The copy bundled inside the Claude
-  desktop app isn't logged in on its own.
-
-## The example
-
-`examples/keeptaste/` holds the configs of the app this tool was built on: a
-base config with a UI-driven `capture_state` hook, a focused study, a
-research-team study and a calibration build. It is a snapshot to read, not a
-working copy. See [its README](examples/keeptaste/README.md).
+Simulated personas are not users. Nothing here measures demand, and a finding
+is a hypothesis about usability at the resolution of what a model can see in a
+screenshot.
