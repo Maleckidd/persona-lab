@@ -66,7 +66,7 @@ T_CANARY_FILE="$CANARY" T_REPO="$APP_REPO" render_template "$PROMPTS_DIR/isolati
 log "probe: isolated persona call (model $MODEL_PERSONA)…"
 user_message "$(cat "$OUT/probe.md")" | isolated_claude "$MODEL_PERSONA" "$OUT/system-prompt.md" "$OUT/probe.jsonl" >"$OUT/probe-reply.txt"
 if grep -q 'Not logged in\|Invalid API key' "$OUT/probe.jsonl" "$OUT/probe.jsonl.stderr" 2>/dev/null; then
-  die "claude is not authenticated — set ANTHROPIC_API_KEY or run: claude setup-token (see README)"
+  die "claude is not authenticated — set ANTHROPIC_API_KEY or run: claude setup-token (see docs/how-it-works.md)"
 fi
 [ -s "$OUT/probe-reply.txt" ] || die "the probe produced no answer — see $OUT/probe.jsonl"
 

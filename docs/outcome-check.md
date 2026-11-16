@@ -1,7 +1,7 @@
 # The outcome check
 
-Moved out of the README, where it was a subsection of "What the engine
-does not take on trust". The rig and gesture controls are in
+What the engine does about a persona whose account of the run and the app's
+own state disagree. The rig and gesture controls are in
 [how-it-works.md](how-it-works.md). What this check does *not* yet do is in
 [limitations.md](limitations.md), and the sample session shows it on two
 real runs ([../sample/](../sample/)).

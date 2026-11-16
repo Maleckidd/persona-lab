@@ -10,9 +10,12 @@ reproduce this from the repository — it needs macOS, an Android emulator, the
 1. **`synthesis.md`** — the whole session's report: findings ranked, store
    promises checked, and, at the end, the rig incidents and what was thrown
    out because of them. It is **in Polish**, because the study was run in
-   Polish (`SYNTHESIS_LANG=pl`); so are `actions.log`, `think-aloud.md` and
-   `report.md`. `summary.json`, `outcome.json` and `findings.json` are
-   language-independent.
+   Polish (`SYNTHESIS_LANG=pl`); so are `findings.json`, the headings of every
+   `think-aloud.md` and `report.md`, and the action descriptions in
+   `actions.log`. Inside a run, the words are the persona's: Kuba's are Polish,
+   Sophie's English, and the judge's notes in `outcome.json` follow the
+   persona. The verdict fields (`verified`, `self_report`, `tainted`,
+   `verdict`) read the same in either.
 2. **One run**, in this order: `persona.json` (who the engine simulated, and
    what they were asked to get done) → `think-aloud.md` (every turn: the
    screenshot the persona saw, their notes, the action the engine performed) →
@@ -25,11 +28,27 @@ reproduce this from the repository — it needs macOS, an Android emulator, the
 **`kuba-60-sekund/run-1` — the clean case.** `verified: met`,
 `self_report: underclaimed`, no rig incident. Kuba pastes a recipe, the app
 splits it correctly, and the save works — `state-new.md` has all 9 ingredients
-and 5 steps in separate sections. But the "SHOW" snackbar took him to the home
-screen and the new recipe was not on the list, so he left convinced the save
-had failed (`report.md`, first problem). The persona's word and the app's state
-disagree, and the engine reports both. This is the point of the tool: a
-self-report alone would have recorded a failed save that never happened.
+and 5 steps in separate sections. But the new recipe was not on the home
+screen and tapping "SHOW" did not open it, so he could not tell whether it had
+saved, and wrote that for real he would take the save for broken (`report.md`,
+first problem). The persona's word and the app's state disagree, and the engine
+reports both. This is the point of the tool: a self-report alone stops at "the
+save may not work"; with the state read, the finding is that the save works and
+a fresh recipe is nowhere the user looks (F-010 in `synthesis.md`).
+
+Three things to know before leaning on this run:
+
+- It ended on its turn limit, not on a decision: `outcome` is `limit`, and
+  Kuba's tenth action was a tap on "All recipes", where the recipe was; the run
+  stopped before he saw the result. `underclaimed` means "did not end in `done`, and the state
+  says `met`"; the doubt itself is in `report.md`, not in the flag.
+- "SHOW did nothing" is most likely the rig, not the app. The snackbar lasts
+  8 s and a persona's turn takes longer; in another run of the session the same
+  tap opened the recipe. `synthesis.md` says so and keeps only the part that
+  holds: the one way to a fresh recipe is an element that disappears.
+- The judge's note on Kuba's second need reads `limit` as a restriction inside
+  the app. It is the rig's turn limit. `synthesis.md` catches that too, in its
+  last section; the verdict (`unverifiable`) is unaffected.
 
 **`sophie-gift-book/run-2` — the counter-example.** `verified: partly`,
 `tainted: true`. Some ingredient words came out truncated — `raspbe`, `jel`,
@@ -68,7 +87,8 @@ edited.
 
 ## What is not here
 
-- the other 8 runs of the session (Halina, Marta, Daniel, Sophie run 1).
+- the other 8 runs of the session (Halina, Marta and Daniel twice each, Kuba
+  run 2, Sophie run 1).
   Session-level `summary.json`, `personas.json` and `findings.json` cover all
   10, and `synthesis.md` discusses all 10 — its 57 screenshot links are
   relative to the app repository's `persona-lab/runs/20261114-200122/` and do
@@ -80,5 +100,6 @@ edited.
 - the synthesis's own preamble, cut by hand after the session. Nothing else in
   it was changed.
 
-Steps 9 and 10 of the publication plan will add a seeded-defect score
-(`seeded-score.md`) and a ledger entry with a closed loop next to these.
+Also not here, because neither exists yet: a seeded-defect score
+(`seeded-score.md`) and a ledger entry with a closed loop. See
+[`docs/limitations.md`](../docs/limitations.md).

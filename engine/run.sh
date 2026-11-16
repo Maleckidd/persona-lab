@@ -37,7 +37,7 @@
 #   --compare DIR-A DIR-B        two sessions side by side (before/after a fix, or two
 #                                store listings); prints Markdown
 #
-# Output: <runs-dir>/<session-id>/ — see README.md.
+# Output: <runs-dir>/<session-id>/ — see docs/how-it-works.md.
 set -uo pipefail
 
 DIR="$(cd "$(dirname "$0")" && pwd)"

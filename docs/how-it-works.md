@@ -1,6 +1,6 @@
 # How it works
 
-Moved out of the README. The outcome check has its own page
+A session step by step. The outcome check has its own page
 ([outcome-check.md](outcome-check.md)), as do the ledger
 ([ledger.md](ledger.md)), the seeded-defect score
 ([calibration.md](calibration.md)) and writing a config for your own app

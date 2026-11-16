@@ -9,12 +9,13 @@ the app actually stored.
 
 ![One run: three turns and the engine's verdict](docs/one-run.png)
 
-That run is the whole idea in one place. The persona left believing the save
-had failed. The engine read the app and found the recipe saved correctly, and
+That run is the whole idea in one place. The persona ran out of turns unable to
+tell whether the recipe had saved, and wrote that he would take the save for
+broken. The engine read the app, found the recipe stored correctly, and
 recorded the disagreement. A report written by the persona alone — which is
-what you get from asking a model to "test this app" — would have recorded a bug
-that does not exist and missed the one that does: a saved recipe you cannot
-find.
+what you get from asking a model to "test this app" — stops at "the save may
+not work". With the state read it becomes a different finding, and the right
+one: the save works, and a freshly saved recipe is nowhere the user looks.
 
 ## What the engine does not take on trust
 
@@ -42,9 +43,11 @@ app, with screenshots, the state reads, the per-need verdicts and the synthesis
 Nobody can reproduce a session from a clone, so that directory is the evidence.
 
 The tool was built for a Polish-language study, and what the engine writes
-stays in the language the study ran in: the synthesis, the reports and
-`actions.log` in `sample/` are in Polish. `summary.json` and `outcome.json` are
-not, and `sample/README.md` works both runs through in English.
+stays in the language the study ran in: in `sample/` the synthesis, the ledger
+and every heading are in Polish, and so is one of the two personas. The other
+persona speaks English, the verdict fields (`verified`, `self_report`,
+`tainted`) read the same in any language, and `sample/README.md` works both
+runs through in English.
 
 ## Running it
 

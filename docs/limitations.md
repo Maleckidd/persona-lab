@@ -41,11 +41,11 @@ not cosmetic: the same end state can flag a persona as wrong or not.
 ### `overclaimed` has never fired on a real contradiction
 
 The first rule flagged 2 of 2 runs falsely (iteration 11). The rule since then
-has flagged 0 of 20 real runs across iterations 13–14, and none of the 20
+has flagged 0 of 20 real runs across iterations 12–14, and none of the 20
 should have been flagged, so nothing yet shows it can fire when it should. Only
 the selftest covers the positive case. The opposite direction has fired for
 real: `underclaimed` caught Kuba twice in the 2026-11-14 session, where the
-recipe was saved correctly and he left certain it had not been. Until an
+recipe was saved correctly and he left unable to confirm it. Until an
 overclaim is caught in a real session, treat "no overclaim" as "not detected",
 not as "did not happen".
 
@@ -55,6 +55,20 @@ not as "did not happen".
 where one need is `met` with `claimed: false` and another is `partly` comes out
 `consistent`. Per-need underclaims are therefore invisible in `summary.json`
 and have to be read out of `outcome.json`.
+
+### `underclaimed` is read off how the run ended, not off what the persona believed
+
+The rule is "the run did not end in `done`, and the state says `met`"
+(`verify.sh:268`). It does not read the report. A persona that runs out of
+turns with everything in place is flagged exactly like one that gives up in
+doubt. The clean run in `sample/` ended on its turn limit (`outcome: limit`):
+his tenth and last action was a tap on the list that held the recipe, and the
+run stopped before he saw it. His report does say he could not tell whether the
+save had worked, so the flag is right there, but on the report's evidence, not
+the rule's. The judge is no help on this point: it is given how the run ended
+and not the report, and in that run it marked the need `claimed: true`. Read
+`underclaimed` as "stopped short of saying done", and open `report.md` for
+whether the persona doubted the result.
 
 ## The rig
 
@@ -122,7 +136,7 @@ finding (F-009, an ANR) came back in a later session in a new place.
 
 ### No calibration against real users
 
-`config/calibration/real-testers.md` holds template lines. Simulated personas
+`examples/keeptaste/config/calibration/real-testers.md` holds template lines. Simulated personas
 are not users, and nothing here measures whether anyone wants the app. Findings
 from a session are hypotheses about usability, at the resolution of what a
 model can see in a screenshot.

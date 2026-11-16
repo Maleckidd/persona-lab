@@ -180,7 +180,7 @@ Reply with one JSON object only."
       if grep -q 'Not logged in\|Invalid API key\|authentication' "$out/steps/$sid.jsonl" "$out/steps/$sid.jsonl.stderr" 2>/dev/null; then
         video_stop
         device_profile_restore
-        die "claude is not authenticated — see README (ANTHROPIC_API_KEY or claude setup-token)"
+        die "claude is not authenticated — see docs/how-it-works.md (ANTHROPIC_API_KEY or claude setup-token)"
       fi
       [ "$bad" -ge 3 ] && { outcome="error"; outcome_reason="3 invalid replies in a row"; break; }
       feedback="Your previous reply was not a valid JSON object with an \"action\". Reply with JSON only."

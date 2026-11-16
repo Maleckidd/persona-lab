@@ -3,7 +3,7 @@ description: Persona-based usability test of the app on the Android emulator (pe
 argument-hint: "[--only <id>] [--runs N] [--count N] [--personas-file F] [--max-steps N]"
 ---
 
-Run a persona-lab session for this app. The engine is a clone of the persona-lab repository; `PERSONA_LAB_ENGINE` is its `engine/` directory, and its rules are in the `README.md` one level above. Read it if anything below is unclear.
+Run a persona-lab session for this app. The engine is a clone of the persona-lab repository; `PERSONA_LAB_ENGINE` is its `engine/` directory, and its rules are in `docs/how-it-works.md` one level above. Read it if anything below is unclear.
 
 1. Check the preconditions and report any that fail instead of working around them:
    - `PERSONA_LAB_ENGINE` is set and `$PERSONA_LAB_ENGINE/run.sh` exists,
