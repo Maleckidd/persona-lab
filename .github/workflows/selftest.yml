@@ -1,0 +1,45 @@
+name: selftest
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  syntax:
+    name: bash -n
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse every shell script under engine/
+        run: |
+          status=0
+          while IFS= read -r f; do
+            bash -n "$f" || { echo "::error file=$f::bash -n failed"; status=1; }
+          done < <(find engine -name '*.sh' -print)
+          exit $status
+
+  selftest:
+    name: selftest (macOS)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versions
+        run: bash --version | head -1; jq --version; perl --version | sed -n 2p
+      - name: Run the selftest
+        run: bash engine/selftest.sh
+
+  selftest-linux:
+    # The engine has only ever been run on macOS (bash 3.2, BSD userland).
+    # This job says whether it also holds on GNU tools; it is allowed to fail
+    # until someone has looked at the first failure.
+    name: selftest (Linux, non-blocking)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Versions
+        run: bash --version | head -1; jq --version; perl --version | sed -n 2p
+      - name: Run the selftest
+        run: bash engine/selftest.sh
