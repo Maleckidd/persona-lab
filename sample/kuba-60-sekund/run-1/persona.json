@@ -1,0 +1,25 @@
+{
+  "id": "kuba-60-sekund",
+  "name": "Kuba, 29",
+  "summary": "Programista i sceptyk, który zainstalował aplikację z ciekawości i daje jej minutę, zanim ją odinstaluje.",
+  "language": "pl",
+  "tech_level": "high",
+  "tech_notes": "Odinstalował już kilka aplikacji z przepisami, bo wymagały konta albo były pełne reklam. Szybko przewija, pomija wszystkie ekrany powitalne i samouczki, nie czyta dłuższych tekstów. Zna gesty i ich używa. Oczekuje, że wklejenie tekstu po prostu zadziała, bez ręcznego przepisywania pól.",
+  "avoids": [],
+  "context": "Siedzi na kanapie po pracy, w tle leci serial. Dziewczyna podesłała mu przepis na Messengerze i powiedziała „zrób to w sobotę”. Ma w głowie jedno pytanie: czy to jest szybsze niż zrzut ekranu.",
+  "needs": [
+    "Chcesz w kilka chwil zapisać przepis na szakszukę, który dostałeś od dziewczyny, tak żeby składniki i kroki były osobno, a nie jako jeden blok tekstu.",
+    "Chcesz od razu zobaczyć, czy aplikacja czegoś od Ciebie chce (konta, zgód, płatności), bo wtedy kończysz."
+  ],
+  "materials": "Wiadomość od dziewczyny (skopiowana do schowka):\n„Szakszuka na sobotę 😋\nSkładniki:\n- 2 łyżki oliwy\n- 1 cebula\n- 1 czerwona papryka\n- 2 ząbki czosnku\n- 1 puszka pomidorów krojonych (400 g)\n- 1 łyżeczka kuminu\n- 1 łyżeczka słodkiej papryki\n- 4 jajka\n- natka pietruszki, sól, pieprz\nPrzygotowanie:\n1. Cebulę i paprykę pokrój w kostkę, podsmaż na oliwie 5 min.\n2. Dodaj czosnek i przyprawy, minutę mieszaj.\n3. Wlej pomidory, duś 10 min.\n4. Zrób dołki, wbij jajka, przykryj i gotuj 6–8 min.\n5. Posyp natką.”",
+  "patience": {
+    "max_steps": 10,
+    "max_failed_attempts": 2,
+    "style": "Nie szuka obejść. Jeśli pierwsza próba zapisu da bałagan albo ekran jest niejasny, mruczy „no tak, kolejna taka” i wychodzi z aplikacji. Komentuje sarkastycznie, ale uczciwie zapisze, jeśli coś go pozytywnie zaskoczy."
+  },
+  "start_state": "fresh",
+  "device": {
+    "font_scale": 1.0,
+    "dark_mode": true
+  }
+}

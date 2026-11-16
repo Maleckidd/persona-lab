@@ -1,0 +1,27 @@
+shot-001	10:10:08	{"type":"tap","x":141,"y":860}	stuknięcie w (141, 860)
+shot-002	10:10:16	{"type":"tap","x":228,"y":200}	stuknięcie w (228, 200)
+shot-003	10:10:38	{"type":"type","text":"Mum's 60th - Family Recipes"}	wpisano tekst: Mum's 60th - Family Recipes
+shot-004	10:10:49	{"type":"tap","x":270,"y":711}	stuknięcie w (270, 711)
+shot-005	10:10:58	{"type":"tap","x":141,"y":844}	stuknięcie w (141, 844)
+shot-006	10:11:08	{"type":"tap","x":270,"y":730}	stuknięcie w (270, 730)
+shot-007	10:11:20	{"type":"wait"}	odczekanie 3 s
+shot-008	10:11:46	{"type":"tap","x":228,"y":279}	stuknięcie w (228, 279)
+shot-009	10:11:57	{"type":"tap","x":228,"y":279}	stuknięcie w (228, 279)
+shot-010	10:12:33	{"type":"type","text":"Auntie Carol's Trifle"}	wpisano tekst: Auntie Carol's Trifle
+shot-011	10:13:17	{"type":"tap","x":270,"y":625}	stuknięcie w (270, 625)
+shot-012	10:17:17	{"type":"type","text":"1 packet trifle sponges (8)\n3 tbsp sherry\n400 g frozen raspberries, thawed\n1 packet raspberry jelly\n500 ml ready-made custard\n300 ml double cream\n1 tbsp icing sugar\nflaked almonds to finish"}	wpisano tekst: 1 packet trifle sponges (8)
+3 tbsp sherry
+400 g frozen raspberries, thawed
+1 packet raspberry jelly
+500 ml ready-made custard
+300 ml double cream
+1 tbsp icing sugar
+flaked almonds to finish
+shot-013	10:17:37	{"type":"scroll","direction":"down"}	przewinięcie (down)
+shot-014	10:17:54	{"type":"tap","x":270,"y":638}	stuknięcie w (270, 638)
+shot-015	10:20:55	{"type":"type","text":"Break sponges into a glass bowl and drizzle with sherry. Scatter raspberries over. Make up the jelly with 500 ml water, pour over and chill until set (about 3 hours). Spread custard on top. Whip cream with icing sugar to soft peaks, spoon over, sprinkle with almonds. Chill until serving."}	wpisano tekst: Break sponges into a glass bowl and drizzle with sherry. Scatter raspberries over. Make up the jelly with 500 ml water, pour over and chill until set (about 3 hours). Spread custard on top. Whip cream
+shot-016	10:21:14	{"type":"tap","x":270,"y":711}	stuknięcie w (270, 711)
+shot-017	10:21:21	{"type":"tap","x":270,"y":343}	stuknięcie w (270, 343)
+shot-018	10:21:30	{"type":"tap","x":494,"y":71}	stuknięcie w (494, 71)
+shot-019	10:21:37	{"type":"tap","x":97,"y":985}	stuknięcie w (97, 985)
+shot-020	10:21:48	{"type":"give_up","reason":"I made the cookbook and saved the trifle in it, but some ingredient words came out cut short ('raspbe', 'jel', 'ready-ma custar') and '3 hours' turned into a box symbol. I haven't found how to move my shepherd's pie and Victoria sponge in, or whether I can get a PDF to print. It's too fiddly on a crowded tram, so I'll finish at home on the laptop."}	give_up

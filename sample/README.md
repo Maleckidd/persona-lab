@@ -1,0 +1,84 @@
+# One real session
+
+Two runs out of a full session against KeepTaste 1.3.1 (session
+`20261114-200122`, 5 personas x 2 runs, engine commit `b2d8fbe`). Nobody can
+reproduce this from the repository — it needs macOS, an Android emulator, the
+`claude` CLI and the app — so this is the only place the output is visible.
+
+## What to open first
+
+1. **`synthesis.md`** — the whole session's report: findings ranked, store
+   promises checked, and, at the end, the rig incidents and what was thrown
+   out because of them. It is **in Polish**, because the study was run in
+   Polish (`SYNTHESIS_LANG=pl`); so are `actions.log`, `think-aloud.md` and
+   `report.md`. `summary.json`, `outcome.json` and `findings.json` are
+   language-independent.
+2. **One run**, in this order: `persona.json` (who the engine simulated, and
+   what they were asked to get done) → `think-aloud.md` (every turn: the
+   screenshot the persona saw, their notes, the action the engine performed) →
+   `state-new.md` (what the app held afterwards that it did not hold before) →
+   `outcome.json` (the engine's own verdict on each need, read off the app, not
+   off the persona's word).
+
+## The two runs
+
+**`kuba-60-sekund/run-1` — the clean case.** `verified: met`,
+`self_report: underclaimed`, no rig incident. Kuba pastes a recipe, the app
+splits it correctly, and the save works — `state-new.md` has all 9 ingredients
+and 5 steps in separate sections. But the "SHOW" snackbar took him to the home
+screen and the new recipe was not on the list, so he left convinced the save
+had failed (`report.md`, first problem). The persona's word and the app's state
+disagree, and the engine reports both. This is the point of the tool: a
+self-report alone would have recorded a failed save that never happened.
+
+**`sophie-gift-book/run-2` — the counter-example.** `verified: partly`,
+`tainted: true`. Some ingredient words came out truncated — `raspbe`, `jel`,
+`ready-ma custar` in `state-new.md` — and Sophie noticed. It is not an app
+defect: the emulator dropped characters while typing. `synthesis.md`
+("Obserwacje o przebiegach") rejects it as a rig artifact and says why: the
+truncation happened exactly in the typing turn flagged at `shot-012`, and no
+untainted run in the session lost a letter. `outcome.json` still says `partly`,
+and for the wrong reason — the engine's per-run verdict does not know about the
+incident; only the synthesis does. What survives the rejection is a real
+finding: the cookbook holds the trifle but not the two recipes she meant to
+move in (F-011).
+
+## The incident labels are the old engine's
+
+`summary.json` carries the incidents as engine `b2d8fbe` marked them. Sophie
+run 2 is a `stall` there. The current engine (`beddf90`) would call it
+`slow_typing`: it allows 5 s per device call instead of 2 s per typed word, so
+the 233 s typing turn at `shot-012` — 40 calls, 5.8 s each — lands under the
+stall threshold and is flagged as typing too slow to trust instead. That is
+the right label, and it is the run this rule was written from. Re-running
+verification on these files would **not** reproduce it: `steps/timing.tsv` here
+stores the old allowance and no per-turn call count, both of which the new rule
+needs. Kuba run 1 is clean under either engine.
+
+## Isolation
+
+`isolation/isolation.md` shows the persona model has no tools, no MCP servers
+and no access to the app's source, verified with a canary file and five
+repo-only identifiers. It is **not** this session's check: it comes from the
+deploy test of 2026-11-14, which is the only recent one run with
+`--with-control`, the positive control that proves the detector can fail — the
+canary does leak when a Read tool is deliberately allowed. Home and sandbox
+paths in it were replaced with `/Users/you` and `$TMPDIR`; nothing else was
+edited.
+
+## What is not here
+
+- the other 8 runs of the session (Halina, Marta, Daniel, Sophie run 1).
+  Session-level `summary.json`, `personas.json` and `findings.json` cover all
+  10, and `synthesis.md` discusses all 10 — its 57 screenshot links are
+  relative to the app repository's `persona-lab/runs/20261114-200122/` and do
+  not resolve here. Links inside `think-aloud.md` and `report.md` do;
+- `video.webm` (124 MB and 196 MB for these two runs; `video.mp4` is kept),
+  `steps/*.jsonl` and the isolation probe transcripts — CLI transcripts
+  carrying local paths and session metadata — and `report.raw.md`, the model's
+  reply before the preamble was stripped;
+- the synthesis's own preamble, cut by hand after the session. Nothing else in
+  it was changed.
+
+Steps 9 and 10 of the publication plan will add a seeded-defect score
+(`seeded-score.md`) and a ledger entry with a closed loop next to these.

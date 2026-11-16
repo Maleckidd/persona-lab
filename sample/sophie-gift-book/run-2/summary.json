@@ -1,0 +1,29 @@
+{
+  "id": "sophie-gift-book",
+  "name": "Sophie, 34",
+  "run": 2,
+  "start_state": "demo",
+  "language": "en",
+  "steps": 20,
+  "outcome": "give_up",
+  "outcome_reason": "I made the cookbook and saved the trifle in it, but some ingredient words came out cut short ('raspbe', 'jel', 'ready-ma custar') and '3 hours' turned into a box symbol. I haven't found how to move my shepherd's pie and Victoria sponge in, or whether I can get a PDF to print. It's too fiddly on a crowded tram, so I'll finish at home on the laptop.",
+  "cost_usd": 0.4174,
+  "seconds": 996,
+  "rejected_findings": 0,
+  "verified": "partly",
+  "self_report": "consistent",
+  "tainted": true,
+  "taint": [
+    {
+      "kind": "stall",
+      "at": "shot-012",
+      "seconds": 240,
+      "suspect_steps": [
+        "shot-012",
+        "shot-013",
+        "shot-014",
+        "shot-015"
+      ]
+    }
+  ]
+}

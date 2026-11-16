@@ -1,0 +1,298 @@
+{
+  "session": "20261114-200122",
+  "app": "KeepTaste",
+  "version": "1.3.1",
+  "engine": "b2d8fbe",
+  "runs": [
+    {
+      "id": "daniel-sourdough",
+      "name": "Daniel, 45",
+      "run": 1,
+      "start_state": "demo",
+      "language": "en",
+      "steps": 25,
+      "outcome": "give_up",
+      "outcome_reason": "Recipe saved with headings, bold and grams intact and big text works, but I could not find any 'to try' marking in the new recipe form, edit form or recipe menu, so my untested rye variation sits mixed with proven recipes.",
+      "cost_usd": 0.6096,
+      "seconds": 1131,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": true,
+      "taint": [
+        {
+          "kind": "stall",
+          "at": "shot-005",
+          "seconds": 292,
+          "suspect_steps": [
+            "shot-005",
+            "shot-006",
+            "shot-007",
+            "shot-008"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "daniel-sourdough",
+      "name": "Daniel, 45",
+      "run": 2,
+      "start_state": "demo",
+      "language": "en",
+      "steps": 25,
+      "outcome": "give_up",
+      "outcome_reason": "Recipe saved with headings, bold and grams intact, but I couldn't find any way to mark it 'to try' (not in the form, menu, cookbook picker or swipe actions), and I haven't yet tested the big-text and screen-awake behaviour. Giving up on the to-try need.",
+      "cost_usd": 0.6080,
+      "seconds": 43019,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": true,
+      "taint": [
+        {
+          "kind": "stall",
+          "at": "shot-008",
+          "seconds": 9452,
+          "suspect_steps": [
+            "shot-008",
+            "shot-009"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-009",
+          "seconds": 964,
+          "suspect_steps": [
+            "shot-009",
+            "shot-010"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-010",
+          "seconds": 520,
+          "suspect_steps": [
+            "shot-010",
+            "shot-011",
+            "shot-012"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-012",
+          "seconds": 1892,
+          "suspect_steps": [
+            "shot-012",
+            "shot-013"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-015",
+          "seconds": 1042,
+          "suspect_steps": [
+            "shot-015",
+            "shot-016",
+            "shot-017",
+            "shot-018",
+            "shot-019"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-019",
+          "seconds": 2945,
+          "suspect_steps": [
+            "shot-019",
+            "shot-020",
+            "shot-021"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-021",
+          "seconds": 1024,
+          "suspect_steps": [
+            "shot-021",
+            "shot-022",
+            "shot-023"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-023",
+          "seconds": 3054,
+          "suspect_steps": [
+            "shot-023",
+            "shot-024"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-024",
+          "seconds": 2091,
+          "suspect_steps": [
+            "shot-024",
+            "shot-025"
+          ]
+        },
+        {
+          "kind": "stall",
+          "at": "shot-025",
+          "seconds": 1700,
+          "suspect_steps": [
+            "shot-025"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "halina-zeszyt",
+      "name": "Halina, 71",
+      "run": 1,
+      "start_state": "fresh",
+      "language": "pl",
+      "steps": 23,
+      "outcome": "give_up",
+      "outcome_reason": "Sernik jest zapisany i litery da się powiększyć, ale nie umiem włożyć go do książki 'Swieta'. Nie widzę żadnego podpisanego słowami przycisku do tego, a trzech kropek się boję. Poproszę wnuczkę w niedzielę.",
+      "cost_usd": 0.5921,
+      "seconds": 571,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "halina-zeszyt",
+      "name": "Halina, 71",
+      "run": 2,
+      "start_state": "fresh",
+      "language": "pl",
+      "steps": 22,
+      "outcome": "give_up",
+      "outcome_reason": "Nie umiem przenieść zapisanego sernika do książki Święta, a nie będę przepisywać wszystkiego jednym palcem od nowa. Poproszę wnuczkę w niedzielę.",
+      "cost_usd": 0.5073,
+      "seconds": 638,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "kuba-60-sekund",
+      "name": "Kuba, 29",
+      "run": 1,
+      "start_state": "fresh",
+      "language": "pl",
+      "steps": 10,
+      "outcome": "limit",
+      "outcome_reason": "",
+      "cost_usd": 0.2299,
+      "seconds": 539,
+      "rejected_findings": 0,
+      "verified": "met",
+      "self_report": "underclaimed",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "kuba-60-sekund",
+      "name": "Kuba, 29",
+      "run": 2,
+      "start_state": "fresh",
+      "language": "pl",
+      "steps": 10,
+      "outcome": "give_up",
+      "outcome_reason": "Import i zapis poszły szybko i bez konta, składniki i kroki były osobno. Ale po zapisie nie mogę znaleźć przepisu: lista pokazuje tylko Śniadania, a POKAŻ wrócił na ekran główny. Nie wiem, czy to jest szybsze niż zrzut ekranu, jeśli nie mogę tego odnaleźć.",
+      "cost_usd": 0.2133,
+      "seconds": 522,
+      "rejected_findings": 0,
+      "verified": "met",
+      "self_report": "underclaimed",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "marta-lodowka",
+      "name": "Marta, 38",
+      "run": 1,
+      "start_state": "demo",
+      "language": "pl",
+      "steps": 16,
+      "outcome": "done",
+      "outcome_reason": "Skończyły mi się kroki. Dopisałam notatkę do zakupów i doszłam do wysyłania SMS-em, ale nie wybrałam odbiorcy (przycisk Send szary). Szukanie z cukinią, fetą i jajkami nic sensownego nie dało, a składników na bolognese nie dopisałam.",
+      "cost_usd": 0.3708,
+      "seconds": 496,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "marta-lodowka",
+      "name": "Marta, 38",
+      "run": 2,
+      "start_state": "demo",
+      "language": "pl",
+      "steps": 16,
+      "outcome": "give_up",
+      "outcome_reason": "Lista zakupow jest gotowa, ale w oknie wiadomosci nie moge wybrac meza, a przycisk Send jest szary. Przepisu na cukinie z feta i jajkami tez nie znalazlam, a skladnikow na jutrzejsze spaghetti bolognese nie dodalam. Nie mam wiecej czasu, jade do Biedronki.",
+      "cost_usd": 0.3526,
+      "seconds": 493,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "sophie-gift-book",
+      "name": "Sophie, 34",
+      "run": 1,
+      "start_state": "demo",
+      "language": "en",
+      "steps": 11,
+      "outcome": "give_up",
+      "outcome_reason": "The app keeps freezing whenever I try to save the new cookbook, so I couldn't create the book, add Auntie Carol's trifle, or find out about PDF export. I'm not even sure whether anything got saved or duplicated. I'll try again at home.",
+      "cost_usd": 0.1967,
+      "seconds": 579,
+      "rejected_findings": 0,
+      "verified": "not_met",
+      "self_report": "consistent",
+      "tainted": false,
+      "taint": []
+    },
+    {
+      "id": "sophie-gift-book",
+      "name": "Sophie, 34",
+      "run": 2,
+      "start_state": "demo",
+      "language": "en",
+      "steps": 20,
+      "outcome": "give_up",
+      "outcome_reason": "I made the cookbook and saved the trifle in it, but some ingredient words came out cut short ('raspbe', 'jel', 'ready-ma custar') and '3 hours' turned into a box symbol. I haven't found how to move my shepherd's pie and Victoria sponge in, or whether I can get a PDF to print. It's too fiddly on a crowded tram, so I'll finish at home on the laptop.",
+      "cost_usd": 0.4174,
+      "seconds": 996,
+      "rejected_findings": 0,
+      "verified": "partly",
+      "self_report": "consistent",
+      "tainted": true,
+      "taint": [
+        {
+          "kind": "stall",
+          "at": "shot-012",
+          "seconds": 240,
+          "suspect_steps": [
+            "shot-012",
+            "shot-013",
+            "shot-014",
+            "shot-015"
+          ]
+        }
+      ]
+    }
+  ]
+}

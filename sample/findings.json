@@ -1,0 +1,397 @@
+[
+  {
+    "id": "F-010",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Nowo zapisany przepis bez książki niewidoczny po zapisie",
+    "priority": "P1",
+    "personas": [
+      "halina-zeszyt",
+      "kuba-60-sekund",
+      "daniel-sourdough"
+    ],
+    "runs": 6,
+    "where": [
+      "app/recipe/new.tsx:94",
+      "app/recipe/new.tsx:98",
+      "components/ui/SnackbarProvider.tsx:54",
+      "app/(tabs)/index.tsx:255"
+    ]
+  },
+  {
+    "id": "F-024",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Chipy minutnika przy pierwszym renderze: czas znika, kreska przecina inne słowa",
+    "priority": "P1",
+    "personas": [
+      "halina-zeszyt",
+      "daniel-sourdough",
+      "sophie-gift-book"
+    ],
+    "runs": 4,
+    "where": [
+      "components/timers/timerMarkdownRules.tsx:32",
+      "components/timers/TimerChip.tsx:90"
+    ]
+  },
+  {
+    "id": "F-011",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Przypisanie istniejącego przepisu do książki nieodkrywalne",
+    "priority": "P1",
+    "personas": [
+      "halina-zeszyt",
+      "sophie-gift-book"
+    ],
+    "runs": 3,
+    "where": [
+      "app/recipe/[id].tsx:262",
+      "components/recipe/RecipeForm.tsx:349",
+      "app/cookbook/[id].tsx:447",
+      "app/cookbook/[id].tsx:512"
+    ]
+  },
+  {
+    "id": "F-025",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Przełącznik Do wypróbowania schowany na dnie formularza, brak w menu przepisu",
+    "priority": "P1",
+    "personas": [
+      "daniel-sourdough"
+    ],
+    "runs": 2,
+    "where": [
+      "components/recipe/RecipeForm.tsx:457",
+      "app/recipe/[id].tsx:266",
+      "app/cookbook/[id].tsx:412"
+    ]
+  },
+  {
+    "id": "F-009",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "ANR przy zapisie nowej książki",
+    "priority": "P1",
+    "personas": [
+      "sophie-gift-book"
+    ],
+    "runs": 1,
+    "where": [
+      "app/cookbook/new.tsx:19"
+    ]
+  },
+  {
+    "id": "F-001",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Klawiatura zasłania pola Składniki/Przygotowanie",
+    "priority": "P2",
+    "personas": [
+      "halina-zeszyt",
+      "kuba-60-sekund",
+      "daniel-sourdough"
+    ],
+    "runs": 3,
+    "where": [
+      "components/recipe/RecipeForm.tsx:281",
+      "components/recipe/RecipeForm.tsx:477"
+    ]
+  },
+  {
+    "id": "F-013",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Klawiatura otwiera się sama w Wszystkie przepisy",
+    "priority": "P2",
+    "personas": [
+      "halina-zeszyt",
+      "daniel-sourdough"
+    ],
+    "runs": 3,
+    "where": [
+      "app/cookbook/[id].tsx:395"
+    ]
+  },
+  {
+    "id": "F-021",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Pola nie pokazują fokusu, placeholder wygląda jak tekst",
+    "priority": "P2",
+    "personas": [
+      "halina-zeszyt",
+      "sophie-gift-book"
+    ],
+    "runs": 3,
+    "where": [
+      "components/ui/Input.tsx:17"
+    ]
+  },
+  {
+    "id": "F-020",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Z wyszukiwania do Zakupów trzeba się cofać",
+    "priority": "P3",
+    "personas": [
+      "marta-lodowka"
+    ],
+    "runs": 2,
+    "where": [
+      "app/cookbook/[id].tsx:395"
+    ]
+  },
+  {
+    "id": "F-014",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Ikona aparatu bez podpisu w formularzu książki",
+    "priority": "P3",
+    "personas": [
+      "halina-zeszyt"
+    ],
+    "runs": 1,
+    "where": [
+      "components/cookbook/CookbookForm.tsx:194"
+    ]
+  },
+  {
+    "id": "F-019",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Klawiatura zmienia pisownię w składnikach",
+    "priority": "P3",
+    "personas": [
+      "daniel-sourdough"
+    ],
+    "runs": 1,
+    "where": [
+      "components/recipe/RecipeForm.tsx:418"
+    ]
+  },
+  {
+    "id": "F-026",
+    "status": "reproduced",
+    "kind": "problem",
+    "title": "Przykładowa książka Śniadania zaskakuje na świeżej instalacji",
+    "priority": "P3",
+    "personas": [
+      "halina-zeszyt"
+    ],
+    "runs": 1,
+    "where": [
+      "db/seed.ts"
+    ]
+  },
+  {
+    "id": "F-006",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Szukanie po kilku składnikach z brakującymi",
+    "personas": [
+      "marta-lodowka"
+    ],
+    "runs": 2,
+    "where": [
+      "utils/search.ts:67"
+    ]
+  },
+  {
+    "id": "F-007",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Składniki przepisu na listę jednym ruchem",
+    "personas": [
+      "marta-lodowka"
+    ],
+    "runs": 2,
+    "where": [
+      "app/recipe/add-to-list.tsx"
+    ]
+  },
+  {
+    "id": "F-008",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Ostrzeżenie o duplikacie na liście zakupów",
+    "personas": [
+      "marta-lodowka"
+    ],
+    "runs": 2,
+    "where": [
+      "components/shopping/PasteListSheet.tsx"
+    ]
+  },
+  {
+    "id": "F-016",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Wklejanie ze schowka jednym przyciskiem / wykrywanie schowka",
+    "personas": [
+      "kuba-60-sekund",
+      "marta-lodowka"
+    ],
+    "runs": 3,
+    "where": [
+      "components/recipe/ImportSheet.tsx:463",
+      "components/shopping/PasteListSheet.tsx:45"
+    ]
+  },
+  {
+    "id": "F-022",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Skalowanie przepisu ×2 (poza zakresem)",
+    "personas": [
+      "daniel-sourdough"
+    ],
+    "runs": 2,
+    "where": []
+  },
+  {
+    "id": "F-027",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Dodaj zapisane przepisy z widoku książki",
+    "personas": [
+      "halina-zeszyt",
+      "sophie-gift-book"
+    ],
+    "runs": 2,
+    "where": [
+      "app/cookbook/[id].tsx:447"
+    ]
+  },
+  {
+    "id": "F-028",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Podgląd przepisu przed zapisem",
+    "personas": [
+      "halina-zeszyt",
+      "sophie-gift-book"
+    ],
+    "runs": 2,
+    "where": []
+  },
+  {
+    "id": "F-029",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Wyjaśnienie lub wyłączenie chipów minutnika",
+    "personas": [
+      "daniel-sourdough"
+    ],
+    "runs": 2,
+    "where": [
+      "components/timers/TimerChip.tsx"
+    ]
+  },
+  {
+    "id": "F-030",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Większy maksymalny rozmiar tekstu",
+    "personas": [
+      "daniel-sourdough"
+    ],
+    "runs": 1,
+    "where": []
+  },
+  {
+    "id": "F-031",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Podsumowanie po imporcie",
+    "personas": [
+      "kuba-60-sekund"
+    ],
+    "runs": 1,
+    "where": []
+  },
+  {
+    "id": "F-032",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Wysyłanie listy tylko z nowymi pozycjami",
+    "personas": [
+      "marta-lodowka"
+    ],
+    "runs": 2,
+    "where": []
+  },
+  {
+    "id": "F-033",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Łatwiejszy odbiorca / Kopiuj listę",
+    "personas": [
+      "marta-lodowka"
+    ],
+    "runs": 2,
+    "where": []
+  },
+  {
+    "id": "F-034",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "PDF łatwy do znalezienia z wnętrza książki",
+    "personas": [
+      "sophie-gift-book"
+    ],
+    "runs": 1,
+    "where": [
+      "app/cookbook/[id].tsx:512"
+    ]
+  },
+  {
+    "id": "F-035",
+    "status": "reproduced",
+    "kind": "wish",
+    "title": "Zachować wpisany tekst przy zamknięciu aplikacji",
+    "personas": [
+      "sophie-gift-book"
+    ],
+    "runs": 1,
+    "where": []
+  },
+  {
+    "id": "F-002",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-003",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-004",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-005",
+    "status": "not_reproduced"
+  },
+  {
+    "id": "F-012",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-015",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-017",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-018",
+    "status": "not_exercised"
+  },
+  {
+    "id": "F-023",
+    "status": "not_exercised"
+  }
+]

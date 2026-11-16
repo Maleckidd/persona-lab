@@ -1,0 +1,33 @@
+{
+  "verified": "partly",
+  "self_report": "consistent",
+  "needs_met": 0,
+  "needs_partly": 2,
+  "needs_not_met": 0,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Cookbook with family recipes plus trifle",
+      "verdict": "partly",
+      "claimed": false,
+      "evidence": "## Książka: Mum's 60th - Family Recipes\n\n    Auntie Carol's Trifle",
+      "note": "The cookbook exists with the right name, but it holds only the trifle. Mum's shepherd's pie and Granny's Victoria sponge are not in it, and neither appears in the recipe list. The person admits they have not moved them in."
+    },
+    {
+      "need": "Trifle recipe saved in the book",
+      "verdict": "partly",
+      "claimed": true,
+      "evidence": "400 g frozen raspbe thawed; 1 packet raspberry jel; 500 ml ready-ma custar",
+      "note": "The trifle is in the book, but the ingredient text is corrupted: 'raspbe', 'jel' and 'ready-ma custar' are cut short, and 'raspberries,' lost its comma. The 3 hours is stored as a separate time chip, which the app does the same way for other recipes. The person noticed the truncation but still said the trifle was saved. The 'Method:' step is a single block, which is acceptable."
+    },
+    {
+      "need": "Way to print/email whole book without account",
+      "verdict": "unverifiable",
+      "claimed": false,
+      "evidence": "",
+      "note": "Whether the book can be exported or printed without an account is a question about app features. The stored state cannot show it. The person says they did not find an answer."
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "id": "kuba-60-sekund",
+  "name": "Kuba, 29",
+  "run": 1,
+  "start_state": "fresh",
+  "language": "pl",
+  "steps": 10,
+  "outcome": "limit",
+  "outcome_reason": "",
+  "cost_usd": 0.2299,
+  "seconds": 539,
+  "rejected_findings": 0,
+  "verified": "met",
+  "self_report": "underclaimed",
+  "tainted": false,
+  "taint": []
+}
