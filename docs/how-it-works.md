@@ -15,10 +15,14 @@ A session step by step. The outcome check has its own page
    optional hints in `personas.override.md`): needs phrased as goals, context
    of use, tech level, patience budget, start state, language, font scale /
    dark mode. Stored as `personas.json`; reuse a set with `--personas-file`.
-4. **Runs** — per persona × run: device profile (font scale, dark mode) →
-   `reset_app` hook → the app's state is read → video starts → the loop → video
-   stops → the app's state is read again → the persona writes its report → the
-   engine checks its evidence, the outcome and the rig (below).
+4. **Runs** — per persona × run: `reset_app` hook at the device's own font and
+   theme → the persona's device profile (font scale, dark mode) → the app's
+   state is read → video starts → the loop → video stops → the app's state is
+   read again, under the same profile → the device's own profile is put back →
+   the persona writes its report → the engine checks its evidence, the outcome
+   and the rig (below). The device's own font scale and theme are kept in
+   `runs/.device-profile-<serial>` while a persona's are on; a session that was
+   killed leaves the file behind, and the next one restores from it first.
 5. **Synthesis** — one model call that *does* have the repository (read-only:
    Read/Grep/Glob) groups, dedupes and prioritises findings by how many
    personas hit them, maps them to screens and components, judges the store

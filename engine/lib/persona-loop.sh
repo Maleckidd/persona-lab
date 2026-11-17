@@ -49,6 +49,15 @@ wants_end_state() {
   [ "$JUDGE_OUTCOME" = 1 ] || jq -e '(.expect // []) | length > 0' <<<"$1" >/dev/null
 }
 
+# read_before <persona-json> <state> <lang> <run-dir> — the app's state before
+# the persona touches it, for the judge. A failed read is tolerated (the judge
+# is told nothing was captured); a failed cold restart after it is not.
+read_before() {
+  wants_end_state "$1" || return 0
+  (capture_state before "$2" "$3") >"$4/state-before.md" 2>"$4/steps/capture-before.log"
+  app_restart
+}
+
 # run_persona <persona-json> <out-dir> <run-number>
 run_persona() {
   local persona="$1" out="$2" run_no="$3"
@@ -70,23 +79,27 @@ run_persona() {
   log "▶ $id (run $run_no): $name — state=$state lang=$lang font=$font dark=$dark"
 
   # --- environment ---
-  # Reset first, at the device's default font and theme: a config's reset hook
-  # may drive the UI by coordinates, which a larger font_scale moves (and it
-  # may force a theme of its own). The persona's profile goes on afterwards,
-  # with a cold restart so the app comes up in it.
-  # A failed reset loses this run, not the session: the rest still runs and
-  # the skipped one is visible in summary.json.
-  trap 'video_stop; device_profile_restore' INT TERM
+  # Reset first, at the device's own font and theme: a config's reset hook may
+  # drive the UI by coordinates, which a larger font_scale moves (and it may
+  # force a theme of its own). The persona's profile goes on afterwards, with a
+  # cold restart so the app comes up in it.
+  # With a capture_state hook the app is read next, already under the persona's
+  # profile, because the read after the run happens under it too: a read
+  # depends on the layout (ui_collect drops a line it saw on an earlier
+  # screen), so two reads at different font scales differ by lines nobody
+  # wrote. The read leaves the app wherever it navigated, so another cold
+  # restart follows.
   # An optional state_ready hook runs last, on the final app process: anything
   # a cold restart would wipe (a share intent) or that goes stale (the clipboard).
-  # With a capture_state hook the app is also read right after the reset: the
-  # judge needs to know what was there before the persona touched anything.
+  # A failed reset loses this run, not the session: the rest still runs and
+  # the skipped one is visible in summary.json.
+  # The device's own profile comes back after the run, or from run.sh's EXIT
+  # trap if the session ends inside it.
   if ! (reset_app "$state" "$lang") || ! app_wait_ready 90 ||
-    ! { wants_end_state "$persona" && (capture_state before "$state" "$lang") >"$out/state-before.md" 2>"$out/steps/capture-before.log"; true; } ||
-    ! device_profile_apply "$font" "$dark" || ! app_stop || ! app_start || ! app_wait_ready 90 ||
+    ! device_profile_apply "$font" "$dark" || ! app_restart ||
+    ! read_before "$persona" "$state" "$lang" "$out" ||
     { declare -F state_ready >/dev/null && ! (state_ready "$state" "$lang"); }; then
     log "WARNING: could not put the app into state '$state' ($lang) — skipping $id run $run_no"
-    trap - INT TERM
     device_profile_restore
     jq -n --arg id "$id" --arg name "$name" --argjson run "$run_no" --arg state "$state" --arg lang "$lang" \
       '{id: $id, name: $name, run: $run, start_state: $state, language: $lang, steps: 0,
@@ -240,8 +253,7 @@ Reply with one JSON object only."
     (capture_state after "$state" "$lang") >"$out/state.md" 2>"$out/steps/capture-after.log" ||
       log "WARNING: capture_state failed for $id run $run_no — see $out/steps/capture-after.log"
   fi
-  trap - INT TERM
-  device_profile_restore
+  device_profile_restore || log "WARNING: could not restore the device's font scale and theme — the next run retries"
   video_compact "$out/video.webm" "$out/video.mp4"
 
   # --- the persona's report ---

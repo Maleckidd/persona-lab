@@ -2,7 +2,8 @@
 # Self-test of the engine's own logic. No device, no model, no app: only the
 # parts that decide something by themselves — rig incidents, the outcome
 # verdict, expectation patterns, the evidence rule, the findings ledger, the
-# session comparison and the seeded-defect score (with a stand-in for the CLI).
+# session comparison and the seeded-defect score (with a stand-in for the CLI),
+# and the device profile's save and restore (with a stand-in for adb).
 #
 #   bash engine/selftest.sh
 #
@@ -316,6 +317,75 @@ check "history: the entry names the engine commit the session ran on" \
   "$(grep -c '^- \*\*Engine (persona-lab commit):\*\* `abc1234`$' "$T/history-out.md")" "1"
 check "history: the raw-data link follows RUNS_DIR" \
   "$(grep -c '](../../sessions/20260102-030405/)' "$T/history-out.md")" "1"
+
+# --- the device profile, against a stand-in adb --------------------------------------------------
+
+# The fake device keeps font_scale and night mode in two files and logs every
+# call; ADB_FAIL=font or ADB_FAIL=night makes that one "put" fail.
+# shellcheck source=lib/device.sh
+source "$DIR/lib/device.sh"
+mkdir -p "$T/bin" "$T/dev"
+cat >"$T/bin/adb" <<'EOF'
+#!/bin/bash
+D="${FAKE_DEVICE:?}"
+shift 2 # -s <serial>
+echo "$*" >>"$D/calls"
+case "$*" in
+  "shell settings get system font_scale") cat "$D/font" ;;
+  "shell settings put system font_scale "*) [ "${ADB_FAIL:-}" != font ] || exit 1; echo "${!#}" >"$D/font" ;;
+  "shell cmd uimode night") echo "Night mode: $(cat "$D/night")" ;;
+  "shell cmd uimode night "*) [ "${ADB_FAIL:-}" != night ] || exit 1; echo "${!#}" >"$D/night" ;;
+  *) exit 1 ;;
+esac
+EOF
+chmod +x "$T/bin/adb"
+ANDROID_SERIAL=emulator-5554
+export FAKE_DEVICE="$T/dev"
+on_device() { printf '%s %s %s' "$(cat "$T/dev/font")" "$(cat "$T/dev/night")" "$(cat "$(device_profile_file)" 2>/dev/null | tr '\t' '/')"; }
+dev_set() { echo "$1" >"$T/dev/font"; echo "$2" >"$T/dev/night"; : >"$T/dev/calls"; }
+
+dev_set 1.0 no
+PATH="$T/bin:$PATH" device_profile_apply 1.3 true
+check "profile: a persona's profile goes on, the device's own is kept in a file" "$(on_device)" "1.3 yes 1.0/no"
+PATH="$T/bin:$PATH" device_profile_restore
+check "profile: the device's own comes back and the file is gone" "$(on_device)" "1.0 no "
+
+# A session killed with -9 in the middle of a run: the device is at the
+# persona's 1.3, the file still holds 1.0. The next run must not take 1.3 for
+# the device's own.
+dev_set 1.3 yes
+printf '1.0\tno\n' >"$(device_profile_file)"
+PATH="$T/bin:$PATH" device_profile_apply 1.15 false
+check "profile: a leftover file is not overwritten by the next persona's apply" "$(on_device)" "1.15 no 1.0/no"
+PATH="$T/bin:$PATH" device_profile_restore
+check "profile: after a killed session, the restore goes back to the device's own" "$(on_device)" "1.0 no "
+
+dev_set 1.3 yes
+printf '1.0\tno\n' >"$(device_profile_file)"
+PATH="$T/bin:$PATH" ADB_FAIL=font device_profile_restore
+check "profile: a restore whose font call fails keeps the file" "$? $(on_device)" "1 1.3 yes 1.0/no"
+PATH="$T/bin:$PATH" ADB_FAIL=night device_profile_restore
+check "profile: a restore whose theme call fails keeps the file" "$? $(on_device)" "1 1.0 yes 1.0/no"
+rm -f "$(device_profile_file)"
+
+dev_set 1.0 no
+PATH="$T/bin:$PATH" device_profile_restore
+check "profile: with no file, a restore makes no device call" "$? $(wc -l <"$T/dev/calls" | tr -d ' ')" "0 0"
+
+# The traps run.sh sets, in a shell that is then sent TERM in the middle of a
+# run: it must stop there (exit 143), not carry on, and restore on the way out.
+# A process of its own, so that $$ is the shell being killed (bash 3.2 has no
+# BASHPID for a subshell).
+dev_set 1.0 no
+PATH="$T/bin:$PATH" RUNS_DIR="$RUNS_DIR" ANDROID_SERIAL="$ANDROID_SERIAL" "$BASH" -c '
+  source "$1/lib/common.sh"
+  source "$1/lib/device.sh"
+  device_exit_traps
+  device_profile_apply 1.3 true
+  kill -TERM $$
+  echo carried-on >"$FAKE_DEVICE/after-term"' _ "$DIR" 2>/dev/null
+check "profile: TERM in the middle of a run ends the session and restores on exit" \
+  "$? $(on_device)|$(cat "$T/dev/after-term" 2>/dev/null)" "143 1.0 no |"
 
 # --- the isolation check, against a stand-in CLI -----------------------------------------------
 

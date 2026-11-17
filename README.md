@@ -70,8 +70,8 @@ example app is about 2 h and $7; a smoke run about 15 min and $1.50.
 
 `bash engine/selftest.sh` checks the engine's own logic — rig incidents,
 outcome verdicts, the evidence rule, the ledger, the comparison, the seeded
-score, the isolation check against a stand-in CLI — in a few seconds, with no
-device and no model.
+score, the isolation check against a stand-in CLI, the device profile against a
+stand-in `adb` — in a few seconds, with no device and no model.
 
 ## Reading further
 

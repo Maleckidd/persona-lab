@@ -201,6 +201,15 @@ fi
 
 device_check
 log "device $ANDROID_SERIAL ${DEV_W}x${DEV_H}, screenshots ${SHOT_WIDTH}x${SHOT_HEIGHT}"
+# A session that died without a trap (kill -9, a host that went down) left the
+# device at its last persona's font scale and theme. Put the device's own back
+# before anything touches the app; from here on, any exit a shell can trap
+# does it.
+if [ -s "$(device_profile_file)" ]; then
+  log "WARNING: an earlier session ended without restoring the device's font scale and theme ($(tr '\t' ' ' <"$(device_profile_file)")) — restoring them"
+  device_profile_restore || die "could not restore the device profile kept in $(device_profile_file)"
+fi
+device_exit_traps
 command -v ffmpeg >/dev/null || log "WARNING: ffmpeg missing — no compact video"
 if [ -n "${BUILD_CMD:-}" ]; then
   log "build: $BUILD_CMD"

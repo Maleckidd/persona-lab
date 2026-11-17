@@ -30,6 +30,8 @@ app_stop() { adbs shell am force-stop "$APP_ID"; }
 app_clear() { adbs shell pm clear "$APP_ID" >/dev/null; }
 app_set_locale() { adbs shell cmd locale set-app-locales "$APP_ID" --locales "$1" >/dev/null; }
 app_start() { adbs shell monkey -p "$APP_ID" -c android.intent.category.LAUNCHER 1 >/dev/null 2>&1; }
+# app_restart — a cold start, waited on.
+app_restart() { app_stop && app_start && app_wait_ready 90; }
 
 # app_wait_ready [timeout-s] — the app's window has focus and its UI exposes
 # some text (i.e. past the launch splash). Never a fixed sleep: a cold start on
@@ -119,21 +121,65 @@ gallery_clear() {
 }
 
 # --- per-persona device profile ----------------------------------------------
+#
+# A persona may run at its own font scale and theme. The device's own values
+# are written to a file next to the runs before the persona's go on, and put
+# back from that file: after each run, when the session exits for any reason
+# a shell can trap, and, for the ways it cannot (kill -9, a host that died),
+# at the start of the next session before anything touches the app. A reset
+# hook that taps coordinates depends on this: a font scale left at 1.3 by a
+# killed session moves every one of them.
+#
+# The file lives in RUNS_DIR, so a session of another app on the same device
+# does not see it.
 
-# device_profile_apply <font_scale> <dark:true|false> — remembers the previous
-# values so device_profile_restore can put them back.
-device_profile_apply() {
-  PREV_FONT_SCALE="$(adbs shell settings get system font_scale | tr -d '\r')"
-  case "$PREV_FONT_SCALE" in null | "") PREV_FONT_SCALE=1.0 ;; esac
-  PREV_NIGHT="$(adbs shell cmd uimode night | sed -n 's/.*: //p' | tr -d '\r')"
-  adbs shell settings put system font_scale "${1:-1.0}"
-  if [ "${2:-false}" = true ]; then adbs shell cmd uimode night yes >/dev/null; else adbs shell cmd uimode night no >/dev/null; fi
+device_profile_file() {
+  printf '%s/.device-profile-%s' "$RUNS_DIR" "$(printf '%s' "$ANDROID_SERIAL" | tr -c 'A-Za-z0-9._-' '_')"
 }
+
+# device_profile_apply <font_scale> <dark:true|false>
+# A file that is already there holds the device's own values from a run that
+# never put them back; what the device shows now is a persona's, so the file
+# is kept, not overwritten.
+device_profile_apply() {
+  local f font night
+  f="$(device_profile_file)"
+  if [ ! -s "$f" ]; then
+    font="$(adbs shell settings get system font_scale </dev/null | tr -d '\r')"
+    case "$font" in null | "") font=1.0 ;; esac
+    night="$(adbs shell cmd uimode night </dev/null | sed -n 's/.*: //p' | tr -d '\r')"
+    printf '%s\t%s\n' "$font" "$night" >"$f" || return 1
+  fi
+  adbs shell settings put system font_scale "${1:-1.0}" </dev/null || return 1
+  if [ "${2:-false}" = true ]; then
+    adbs shell cmd uimode night yes >/dev/null </dev/null
+  else
+    adbs shell cmd uimode night no >/dev/null </dev/null
+  fi
+}
+
+# device_profile_restore — puts the device's own values back when a file holds
+# them, and removes the file only once they are on the device. No file, no
+# device call: it is safe to call at any time, as often as needed.
 device_profile_restore() {
-  [ -n "${PREV_FONT_SCALE:-}" ] && adbs shell settings put system font_scale "$PREV_FONT_SCALE"
-  case "${PREV_NIGHT:-}" in yes | no) adbs shell cmd uimode night "$PREV_NIGHT" >/dev/null ;; esac
-  PREV_FONT_SCALE=""
-  PREV_NIGHT=""
+  local f font night
+  f="$(device_profile_file)"
+  [ -s "$f" ] || return 0
+  IFS=$'\t' read -r font night <"$f"
+  adbs shell settings put system font_scale "${font:-1.0}" </dev/null || return 1
+  case "$night" in
+    yes | no | auto) adbs shell cmd uimode night "$night" >/dev/null </dev/null || return 1 ;;
+  esac
+  rm -f "$f"
+}
+
+# device_exit_traps — from here on, any exit a shell can trap stops the video
+# and puts the device's own profile back. INT and TERM end the session: with a
+# handler that does not exit, bash would run it and carry on with the next turn.
+device_exit_traps() {
+  trap '[ -z "${VIDEO_RECORDING:-}" ] || video_stop; device_profile_restore' EXIT
+  trap 'exit 130' INT
+  trap 'exit 143' TERM
 }
 
 # --- perception ----------------------------------------------------------------
@@ -412,11 +458,12 @@ video_start() {
   # going, the video just ends there.
   local r
   r="$(adbs emu screenrecord start --time-limit 1800 "$1" 2>&1)"
-  case "$r" in OK*) ;; *) log "WARNING: video not recording: $r" ;; esac
+  case "$r" in OK*) VIDEO_RECORDING=1 ;; *) log "WARNING: video not recording: $r" ;; esac
   sleep 0.8
 }
 video_stop() {
   is_emulator || return 0
+  VIDEO_RECORDING=""
   adbs emu screenrecord stop >/dev/null
   sleep 3 # the muxer keeps writing after the console call returns
 }

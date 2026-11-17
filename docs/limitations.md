@@ -2,8 +2,8 @@
 
 Written by the author, from iterations 11–14. Every entry says what happens,
 how it was found, and what it means when you read a result. Line references
-are to the engine at `beddf90`; run counts are real sessions against KeepTaste,
-not tests.
+are to the engine in the commit that last changed this page; run counts are
+real sessions against KeepTaste, not tests.
 
 A reviewer's short version: the engine is good at catching a persona that
 *gave up on work it actually finished*, and unproven at catching the opposite.
@@ -72,35 +72,53 @@ whether the persona doubted the result.
 
 ## The rig
 
-### The two state reads can run at different font scales
+### The two state reads ran at different font scales — fixed, not yet confirmed on a device
 
-The app is read before the run under the device's own profile
-(`engine/lib/persona-loop.sh:85`) and after it under the persona's
-(`:240`), because `device_profile_apply` runs between them (`:86`).
-`ui_collect` drops any line it already saw on an earlier screen
-(`engine/lib/device.sh:251`), so whether a repeated heading survives depends on
+Until this fix the app was read before the run under the device's own profile
+and after it under the persona's, because the profile went on between the two
+reads. `ui_collect` drops any line it already saw on an earlier screen
+(`engine/lib/device.sh:297`), so whether a repeated heading survives depends on
 the layout, which depends on the font scale. Result: a line in `state-new.md`
 that the persona never wrote (`marek-60-sekund`, iteration 12, both runs).
-*A fix is planned: read both states under the same profile.*
 
-### The device profile does not survive a killed session
+Both reads now run under the persona's profile (`read_before`,
+`engine/lib/persona-loop.sh:55`), at the price of one more cold start per run.
+Nothing has checked that on a device yet: an untouched app read at font scale
+1.0 and again at 1.3 must give an empty `state-new.md`. The two runs in
+`sample/` were read before the fix. Kuba ran at the device's 1.0, so his are
+unaffected; Sophie ran at 1.1, and every line in her `state-new.md` belongs to
+the recipe and the cookbook she made.
 
-The restore runs on INT/TERM only (`persona-loop.sh:79`), and the "previous"
-value is read off the device at the start of each run
-(`device.sh:126`). Kill the session another way and the persona's font scale
-becomes the next run's "previous". A leftover scale of 1.3 cost 6 of 10 runs in
-iteration 12, because the example's demo reset taps fixed coordinates.
-*A fix is planned: restore on EXIT, not on INT/TERM alone.*
+### The device profile did not survive a killed session — fixed, not yet confirmed on a device
+
+Until this fix the restore ran on INT and TERM only, and the "previous" value
+was read off the device at the start of each run. A session killed another way
+left the persona's font scale on the device, and the next run took it for the
+device's own. A leftover scale of 1.3 cost 6 of 10 runs in iteration 12,
+because the example's demo reset taps fixed coordinates.
+
+The device's own values are now kept in a file, `runs/.device-profile-<serial>`,
+while a persona's are on. They are put back after each run, on any exit a
+shell can trap (`device_exit_traps`, `engine/lib/device.sh:179`), and, after a
+`kill -9` or a host that went down, at the start of the next session before
+anything touches the app (`engine/run.sh:208`). A run never overwrites a file it
+finds, because what the device shows at that point is a persona's.
+
+The selftest covers the file rule and the traps against a stand-in `adb`,
+including a TERM in the middle of a run, and each of its 8 cases was checked by
+breaking the code it guards and watching it fail. The test the fix was written
+for has not been run: `kill -9` in the middle of a run at 1.3 on the emulator,
+then a new session whose demo reset passes.
 
 ### Corrupted typing is only partly caught
 
 Two mechanisms produced corrupted text. One is fixed: `adb shell` drained the
 text itself from stdin, so everything after the first line vanished, and a
-persona gave up over "the app cuts my text off" (`device.sh:282-284`, now
+persona gave up over "the app cuts my text off" (`device.sh:328-330`, now
 `</dev/null` on every call). The other is mitigated, not removed: injected at
 full speed, a loaded emulator drops characters inside a React Native
 `TextInput` while the keyboard composes, so the engine types one word per
-device call with a pause (`device.sh:291-313`) and flags a turn that averages
+device call with a pause (`device.sh:337-363`) and flags a turn that averages
 more than `TYPE_CALL_SECONDS` a call as `slow_typing` (`verify.sh:30`).
 
 Three caveats on that flag. The threshold sits between two observations — ten
@@ -143,9 +161,10 @@ model can see in a screenshot.
 
 ## Coverage of the code itself
 
-The selftest covers the logic that decides — 57 cases, no device and no model,
-the CLI stubbed (`engine/selftest.sh:283`). It does not cover the two layers
-that touch the world: `engine/lib/device.sh` (432 lines) and the run loop in
+The selftest covers the logic that decides — 65 cases, no device and no model,
+the CLI stubbed (`engine/selftest.sh:284`). Of the two layers that touch the
+world it covers one corner: the device profile, against a stand-in `adb`. The
+rest of `engine/lib/device.sh` (479 lines) and the run loop in
 `persona-loop.sh` are exercised only by real sessions, which cost money and
 need an emulator. *A loop test that needs no device is planned.*
 
