@@ -3,7 +3,8 @@
 # parts that decide something by themselves — rig incidents, the outcome
 # verdict, expectation patterns, the evidence rule, the findings ledger, the
 # session comparison and the seeded-defect score (with a stand-in for the CLI),
-# and the device profile's save and restore (with a stand-in for adb).
+# the device profile's save and restore (with a stand-in for adb), and whole
+# persona runs end to end against a stand-in device and model.
 #
 #   bash engine/selftest.sh
 #
@@ -321,7 +322,10 @@ check "history: the raw-data link follows RUNS_DIR" \
 # --- the device profile, against a stand-in adb --------------------------------------------------
 
 # The fake device keeps font_scale and night mode in two files and logs every
-# call; ADB_FAIL=font or ADB_FAIL=night makes that one "put" fail.
+# call; ADB_FAIL=font or ADB_FAIL=night makes that one "put" fail. The rest of
+# what it answers is for the run-loop test below: a screenshot, a UI dump with
+# one button (and a developer id that must never reach the persona), a focused
+# window, a hidden keyboard; input and app commands are only logged.
 # shellcheck source=lib/device.sh
 source "$DIR/lib/device.sh"
 mkdir -p "$T/bin" "$T/dev"
@@ -335,7 +339,13 @@ case "$*" in
   "shell settings put system font_scale "*) [ "${ADB_FAIL:-}" != font ] || exit 1; echo "${!#}" >"$D/font" ;;
   "shell cmd uimode night") echo "Night mode: $(cat "$D/night")" ;;
   "shell cmd uimode night "*) [ "${ADB_FAIL:-}" != night ] || exit 1; echo "${!#}" >"$D/night" ;;
-  *) exit 1 ;;
+  "exec-out screencap -p") printf 'not-really-a-png' ;;
+  "shell uiautomator dump "*) echo "UI hierchary dumped to: ${!#}" ;;
+  "exec-out cat "*) echo '<hierarchy><node text="Save" resource-id="com.example:id/secret_save" bounds="[100,200][300,260]" /></hierarchy>' ;;
+  "shell dumpsys window") echo "  mCurrentFocus=Window{1 u0 com.example.fake/.Main}" ;;
+  "shell dumpsys input_method") echo "  mInputShown=false" ;;
+  "shell input "* | "shell am force-stop "* | "shell monkey "*) ;;
+  *) echo "UNKNOWN $*" >>"$D/calls"; exit 1 ;;
 esac
 EOF
 chmod +x "$T/bin/adb"
@@ -386,6 +396,141 @@ PATH="$T/bin:$PATH" RUNS_DIR="$RUNS_DIR" ANDROID_SERIAL="$ANDROID_SERIAL" "$BASH
   echo carried-on >"$FAKE_DEVICE/after-term"' _ "$DIR" 2>/dev/null
 check "profile: TERM in the middle of a run ends the session and restores on exit" \
   "$? $(on_device)|$(cat "$T/dev/after-term" 2>/dev/null)" "143 1.0 no |"
+
+# --- the run loop, end to end, with no device and no model -----------------------------------------
+#
+# run_persona as run.sh calls it, with every external replaced at a seam that
+# already exists: adb and sips on PATH (above), the CLI as CLAUDE_BIN, the
+# config's hooks as shell functions, and sleep as a no-op so it takes seconds.
+# The stand-in CLI answers a turn from a queue of scripted replies, the report
+# and the judge from a file each, and logs which kind of call it got.
+
+cat >"$T/bin/sips" <<'EOF'
+#!/bin/bash
+# sips --resampleWidth W <in> --out <out>
+cp "$3" "$5"
+EOF
+chmod +x "$T/bin/sips"
+cat >"$T/stub-loop-claude" <<'EOF'
+#!/bin/bash
+D="${FAKE_DEVICE:?}"
+msg="$(cat)"
+text="$(printf '%s' "$msg" | jq -r '.message.content[0].text')"
+case "$text" in
+  "# The person's needs"*) kind=judge; reply="$(cat "$D/judge")" ;;
+  "TURN "*)
+    kind=turn
+    printf '%s' "$text" >"$D/turn-$(grep -c '^turn$' "$D/model-calls" 2>/dev/null | tr -d ' ').txt"
+    reply="$(head -n 1 "$D/turns")"
+    tail -n +2 "$D/turns" >"$D/turns.tmp" && mv "$D/turns.tmp" "$D/turns"
+    ;;
+  *) kind=report; reply="$(cat "$D/report")" ;;
+esac
+echo "$kind" >>"$D/model-calls"
+jq -cn --arg r "$reply" '{type: "result", total_cost_usd: 0.01, result: $r}'
+EOF
+chmod +x "$T/stub-loop-claude"
+mkdir -p "$T/loop"
+printf '# Notes\\n\\nA notes app. Write a note, find it again.\\n' >"$T/loop/brief.md"
+
+# loop_run <persona-json> <run-dir> <run-number> — prints run_persona's exit code.
+loop_run() {
+  (
+    sleep() { :; }
+    export PATH="$T/bin:$PATH"
+    ANDROID_SERIAL=fake-device APP_ID=com.example.fake CLAUDE_BIN="$T/stub-loop-claude"
+    BRIEF_FILE="$T/loop/brief.md" STATE_PERSONA_fresh="You have just installed the app."
+    MAX_STEPS=10 SETTLE_SECONDS=0 POST_STALL_WAIT=0 CAPTURE_SETTLE_SECONDS=0 STATE_MAX_CHARS=24000
+    SHOT_WIDTH=540 SHOT_HEIGHT=1200 DEV_W=1080 DEV_H=2400 SCALE=2.000000 UI_HINTS=text
+    MODEL_PERSONA=stub MODEL_JUDGE=stub
+    reset_app() { [ -z "${RESET_FAIL:-}" ]; }
+    # The end state, plus the font scale each read was taken at.
+    capture_state() {
+      echo "$1 $(cat "$FAKE_DEVICE/font")" >>"$FAKE_DEVICE/reads"
+      echo "- an old note"
+      [ "$1" = before ] || printf '%s\n' "${STORED_AFTER:-}"
+    }
+    run_persona "$1" "$2" "$3"
+    echo "$?"
+  ) 2>>"$T/loop/log"
+}
+# loop_reset <turn-reply>... — a fresh device and model queue for the next run.
+loop_reset() {
+  dev_set 1.0 no
+  : >"$T/dev/reads"
+  : >"$T/dev/model-calls"
+  rm -f "$T/dev"/turn-*.txt
+  printf '%s\n' "$@" >"$T/dev/turns"
+}
+turn() { # turn <action-json> — one persona reply
+  jq -cn --argjson a "$1" '{see: "a screen", expect: "something", do: "acting", surprise: "", need: "1", action: $a}'
+}
+calls_matching() { grep -c -- "$1" "$T/dev/calls" | tr -d ' '; }
+
+# 1. A normal run: three turns, the persona declares done, the judge agrees.
+printf '%s\n' '# Raport' '' '## Problems' '- The Save button is small [shot-001]' '- Nothing to show for this one' >"$T/dev/report"
+echo '{"needs": [{"need": "Write a note saying hello world", "verdict": "met", "claimed": true, "evidence": "hello world", "note": "it is there"}]}' >"$T/dev/judge"
+loop_reset "$(turn '{"type": "tap", "x": 100, "y": 200}')" \
+  "$(turn '{"type": "type", "text": "hello world"}')" \
+  "$(turn '{"type": "done", "reason": "saved it"}')"
+P1='{"id": "p1", "name": "Ola, 30", "language": "en", "start_state": "fresh", "needs": ["Write a note saying hello world"], "patience": {"max_steps": 6}, "device": {"font_scale": 1.3, "dark_mode": true}}'
+R="$T/loop/p1/run-1"
+rc="$(STORED_AFTER="- hello world" loop_run "$P1" "$R" 1)"
+check "loop: a normal run returns 0" "$rc" "0"
+check "loop: a tap is sent to the device in device pixels (x2)" "$(calls_matching '^shell input tap 200 400$')" "1"
+check "loop: typing goes one word per device call" \
+  "$(calls_matching "^shell input text 'hello'$") $(calls_matching "^shell input text '%sworld'$")" "1 1"
+check "loop: the model calls are three turns, the report, the judge" "$(tr '\n' ' ' <"$T/dev/model-calls")" "turn turn turn report judge "
+check "loop: the persona sees the visible text in screenshot pixels" \
+  "$(grep -c '^- "Save" @ \[50,100 - 150,130\]$' "$T/dev/turn-0.txt")" "1"
+check "loop: a developer id never reaches the persona" "$(grep -c 'secret_save' "$T/dev/turn-0.txt" "$R/steps/system-prompt.md" | awk -F: '{s += $2} END {print s}')" "0"
+check "loop: actions.log has one line per turn" "$(wc -l <"$R/actions.log" | tr -d ' ')" "3"
+check "loop: timing.tsv has the setup, three turns and the close" "$(cut -f1 "$R/steps/timing.tsv" | tr '\n' ' ')" "reset shot-001 shot-002 shot-003 close "
+check "loop: think-aloud.md has a section per turn" "$(grep -c '^## shot-' "$R/think-aloud.md")" "3"
+check "loop: a report bullet without a screenshot is set aside" \
+  "$(grep -c '^- The Save button is small \[shot-001\](shots/shot-001.png)$' "$R/report.md") $(sed -n '/^## Odrzucone/,$p' "$R/report.md" | grep -c '^- Nothing to show')" "1 1"
+check "loop: state-new.md holds what was added, not what was there" "$(tr '\n' '|' <"$R/state-new.md")" "- hello world|"
+check "loop: both state reads are taken under the persona's font scale" "$(tr '\n' '|' <"$T/dev/reads")" "before 1.3|after 1.3|"
+check "loop: the device's own profile is back after the run" "$(on_device)" "1.0 no "
+check "loop: summary.json" \
+  "$(jq -c '[.outcome, .outcome_reason, .steps, .verified, .self_report, .tainted, .rejected_findings, .cost_usd]' "$R/summary.json")" \
+  '["done","saved it",3,"met","consistent",false,1,0.0500]'
+
+# 2. A gesture the persona avoids, a reply that is not JSON, coordinates off
+#    the screen, and the patience cap.
+printf '%s\n' '# Raport' '' '## Problems' >"$T/dev/report"
+loop_reset "$(turn '{"type": "long_press", "x": 100, "y": 200}')" \
+  "this is not JSON at all" \
+  "$(turn '{"type": "tap", "x": 900, "y": 10}')" \
+  "$(turn '{"type": "tap", "x": 10, "y": 10}')" \
+  "$(turn '{"type": "tap", "x": 20, "y": 20}')"
+P2='{"id": "p2", "name": "Jan, 70", "language": "en", "start_state": "fresh", "needs": [], "avoids": ["long_press"], "patience": {"max_steps": 4}}'
+R="$T/loop/p2/run-1"
+rc="$(loop_run "$P2" "$R" 1)"
+check "loop: an avoided gesture is not offered to the persona" "$(grep -c 'long_press' "$R/steps/system-prompt.md")" "0"
+check "loop: an avoided gesture is refused and never reaches the device" \
+  "$(calls_matching '^shell input swipe') $(sed -n 1p "$R/actions.log" | grep -c 'tego gestu nie używasz')" "0 1"
+check "loop: a reply that is not JSON is logged as INVALID and the run goes on" "$(sed -n 2p "$R/actions.log" | cut -f3)" "INVALID"
+check "loop: a tap off the screenshot is refused, not sent" \
+  "$(sed -n 3p "$R/actions.log" | grep -c 'niepoprawne współrzędne') $(calls_matching '^shell input tap ')" "1 1"
+check "loop: the persona's patience ends the run at 4 turns, not MAX_STEPS" \
+  "$(jq -c '[.outcome, .steps]' "$R/summary.json") $(grep -c '^turn$' "$T/dev/model-calls")" '["limit",4] 4'
+check "loop: with no needs there is no judge call" "$(grep -c '^judge$' "$T/dev/model-calls")" "0"
+
+# 3. Three invalid replies in a row end the run as an error, and taint it.
+loop_reset "nope" "still nope" "no JSON here"
+R="$T/loop/p2/run-2"
+rc="$(loop_run "$P2" "$R" 2)"
+check "loop: three invalid replies end the run as a tainted error" \
+  "$(jq -c '[.outcome, .steps, .tainted]' "$R/summary.json")" '["error",3,true]'
+
+# 4. A reset that fails loses the run, not the session.
+loop_reset
+R="$T/loop/p1/run-2"
+rc="$(RESET_FAIL=1 loop_run "$P1" "$R" 2)"
+check "loop: a failed reset is a skipped run, with no model call" \
+  "$rc $(jq -r .outcome "$R/summary.json") $(wc -l <"$T/dev/model-calls" | tr -d ' ')" "1 skipped 0"
+check "loop: a failed reset leaves the device's profile alone" "$(on_device) $(calls_matching 'font_scale 1.3')" "1.0 no  0"
 
 # --- the isolation check, against a stand-in CLI -----------------------------------------------
 

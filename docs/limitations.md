@@ -161,12 +161,22 @@ model can see in a screenshot.
 
 ## Coverage of the code itself
 
-The selftest covers the logic that decides — 65 cases, no device and no model,
-the CLI stubbed (`engine/selftest.sh:284`). Of the two layers that touch the
-world it covers one corner: the device profile, against a stand-in `adb`. The
-rest of `engine/lib/device.sh` (479 lines) and the run loop in
-`persona-loop.sh` are exercised only by real sessions, which cost money and
-need an emulator. *A loop test that needs no device is planned.*
+The selftest has 88 cases and needs no device and no model. Besides the
+logic that decides, it runs whole persona runs end to end
+(`engine/selftest.sh:400`): `run_persona` as a session calls it, with `adb` and
+`sips` replaced on `PATH`, the CLI replaced by a script that answers each turn
+from a queue, and the config's hooks as shell functions. That covers what the
+loop itself enforces — the patience cap, refused gestures, coordinates off the
+screen, invalid replies, a failed reset, the order of the state reads and the
+profile, the evidence rule on the report — and each of those cases was checked
+by breaking the code it guards.
+
+What it cannot cover is what a real device does: how fast `adb input` really
+types, a UI dump that fails mid-transition, the screen recorder, the emulator
+dropping characters under load. The stand-in answers the same way every time.
+Those, and every config's own hooks, are exercised only by real sessions,
+which cost money and need an emulator. The selftest has only ever run on
+macOS; CI runs it on Linux too, without blocking on it.
 
 Two import fixtures fetch live third-party pages
 (`examples/keeptaste/config-import/clipboard/url-ok.txt`,
