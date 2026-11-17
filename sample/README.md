@@ -85,6 +85,13 @@ canary does leak when a Read tool is deliberately allowed. Home and sandbox
 paths in it were replaced with `/Users/you` and `$TMPDIR`; nothing else was
 edited.
 
+## The personas are invented
+
+Kuba, Sophie and the other three were generated for this session by the
+engine's persona generator, from the app's store listing (`personas.json`),
+and so was what they were handed: Kuba's message from his girlfriend, Sophie's
+from her sister. Any likeness to a real person is a coincidence.
+
 ## What is not here
 
 - the other 8 runs of the session (Halina, Marta and Daniel twice each, Kuba

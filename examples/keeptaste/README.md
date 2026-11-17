@@ -23,6 +23,21 @@ instead of from where the file is.
 Paths below are relative to this directory; commands are run from the app's
 repository, where the same directories are under `persona-lab/`.
 
+## The personas and their materials are invented
+
+The people in every `personas.json` and everything they are handed as their
+own were written for these studies: the blog page, the Instagram caption and
+its `@sophie.cooks.at.home` handle and the message from a mother in
+`config-import/clipboard/`, and the grandmother's recipe card and the cookbook
+page in `config-import/photos/`, which are rendered from the `*.html` next to
+them. Any likeness to a real person, account or blog is a coincidence.
+
+The exception is four recipe pages the import and research studies link to,
+which are real and public: one on `kwestiasmaku.com` and three on
+`doradcasmaku.pl` (`config-import/clipboard/url-*.txt`, `SHARE_URL` in
+`config-import/config.sh`, and the materials of four personas). Only their
+addresses are here; the app fetches the pages during a run.
+
 ## What is in the config
 
 - `config/brief.md` (PL) and `config/brief.en.md` are the **Play Store
