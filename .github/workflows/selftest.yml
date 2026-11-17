@@ -13,6 +13,7 @@ jobs:
   syntax:
     name: bash -n
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Parse every shell script under engine/
@@ -28,6 +29,7 @@ jobs:
     # A newer bash on the runner's PATH would hide a 4.x-only construct.
     name: selftest (macOS, bash 3.2)
     runs-on: macos-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
       - name: Versions
@@ -48,6 +50,7 @@ jobs:
     # until someone has looked at the first failure.
     name: selftest (Linux, non-blocking)
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4

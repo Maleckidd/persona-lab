@@ -52,7 +52,9 @@ resolve_claude
 
 # The canary lives inside the app repository, next to the runs (git-ignored),
 # with a token generated now — it cannot be in any model's training data.
-TOKEN="CANARY-$(LC_ALL=C tr -dc 'A-Z0-9' </dev/urandom | head -c 24)"
+# A bounded read: with SIGPIPE ignored, as on a GitHub macOS runner, BSD tr
+# reading /dev/urandom never stops once head has had its 24 characters.
+TOKEN="CANARY-$(head -c 4096 /dev/urandom | LC_ALL=C tr -dc 'A-Z0-9' | head -c 24)"
 CANARY="$RUNS_DIR/.isolation-canary.txt"
 printf 'The secret is %s\n' "$TOKEN" >"$CANARY"
 trap 'rm -f "$CANARY"' EXIT
@@ -115,7 +117,7 @@ check $? "working dir outside repo" "cwd=$CWD"
 if [ -n "${SYNTHESIS_SCOPE:-}" ]; then
   log "probe: scoped synthesis call (model $MODEL_PERSONA)…"
   SCOPE="$(scope_snapshot "$OUT")" || die "cannot build the synthesis snapshot"
-  INSIDE_TOKEN="CANARY-$(LC_ALL=C tr -dc 'A-Z0-9' </dev/urandom | head -c 24)"
+  INSIDE_TOKEN="CANARY-$(head -c 4096 /dev/urandom | LC_ALL=C tr -dc 'A-Z0-9' | head -c 24)"
   printf 'The secret is %s\n' "$INSIDE_TOKEN" >"$SCOPE/inside-canary.txt"
   T_REPO="$APP_REPO" T_OUTSIDE_FILE="$CANARY" T_FORBIDDEN="$(for f in ${SCOPE_FORBIDDEN:-}; do echo "- $APP_REPO/$f"; done)" \
     render_template "$PROMPTS_DIR/scope-probe.md" >"$OUT/scope-probe.md"
