@@ -175,8 +175,9 @@ What it cannot cover is what a real device does: how fast `adb input` really
 types, a UI dump that fails mid-transition, the screen recorder, the emulator
 dropping characters under load. The stand-in answers the same way every time.
 Those, and every config's own hooks, are exercised only by real sessions,
-which cost money and need an emulator. The selftest has only ever run on
-macOS; CI runs it on Linux too, without blocking on it.
+which cost money and need an emulator. The selftest is written against the
+system bash 3.2 on macOS; CI also runs it on Linux (bash 5, GNU tools), where
+it passed on the first run and is kept non-blocking.
 
 Two import fixtures fetch live third-party pages
 (`examples/keeptaste/config-import/clipboard/url-ok.txt`,
