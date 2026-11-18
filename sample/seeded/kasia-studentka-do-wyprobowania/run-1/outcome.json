@@ -1,0 +1,26 @@
+{
+  "verified": "partly",
+  "self_report": "consistent",
+  "needs_met": 1,
+  "needs_partly": 1,
+  "needs_not_met": 0,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Zapisać przepis jako 'do wypróbowania'",
+      "verdict": "partly",
+      "claimed": false,
+      "evidence": "Makaron z sosem z pieczonej papryki (ten z TikToka)",
+      "note": "Przepis jest zapisany z właściwym tytułem i treścią, ale nie ma żadnego oznaczenia „do wypróbowania” ani osobnej książki/kategorii. Osoba sama przyznaje, że nie znalazła takiej opcji. Przepis nie trafił do żadnej książki (książka Śniadania zawiera tylko Naleśniki). Stan zgadza się z jej wypowiedzią."
+    },
+    {
+      "need": "Osobne nagłówki Sos i Makaron w składnikach",
+      "verdict": "met",
+      "claimed": true,
+      "evidence": "SKŁADNIKI / Sos / 2 czerwone papryki / 1 glowka czosnku / 100 g serka feta / 2 lyzki oliwy / szczypta chili / Makaron / 200 g penne / garsc bazylii",
+      "note": "Nagłówki i podział składników zgodne z notatkami. Brak polskich znaków to nie błąd. Drobna uwaga: „30 min” wpadło jako czas w kroku przygotowania, ale nie wpływa na składniki."
+    }
+  ]
+}

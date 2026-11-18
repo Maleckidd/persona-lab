@@ -1,0 +1,26 @@
+{
+  "verified": "partly",
+  "self_report": "consistent",
+  "needs_met": 0,
+  "needs_partly": 1,
+  "needs_not_met": 0,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Książka Święta z piernikami",
+      "verdict": "partly",
+      "claimed": false,
+      "evidence": "## Książka: Swieta\n\n    (brak przepisów)",
+      "note": "Książka „Swieta” została utworzona, ale jest pusta. Pierników nie ma ani w niej, ani na liście przepisów (w widocznych tytułach). Przeniesienie się nie udało. Osoba sama mówi, że pierników nie znalazła, więc claimed=false."
+    },
+    {
+      "need": "Kopia zapasowa ze zdjęciami i wiedza, gdzie leży",
+      "verdict": "unverifiable",
+      "claimed": false,
+      "evidence": "",
+      "note": "Zrzut stanu obejmuje tylko przepisy, książki i listy zakupów. Nie pokazuje plików kopii zapasowej ani jej lokalizacji. Nie da się stwierdzić, czy kopia powstała. Osoba przyznaje, że nie wie, gdzie kopia leży, i nie ufa aplikacji."
+    }
+  ]
+}

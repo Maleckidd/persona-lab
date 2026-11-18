@@ -1,6 +1,9 @@
 # Calibration on seeded defects
 
-Never run on a real session yet; see [limitations.md](limitations.md).
+Run once, on 2026-11-18: recall 3 of 4 reached defects, every verdict checked
+by hand, in [`sample/seeded/`](../sample/seeded/README.md). What that number
+does and does not say is in
+[limitations.md](limitations.md#recall-rests-on-one-session-and-four-defects).
 
 How much of what is wrong do the personas catch? Plant a handful of usability
 defects in a build, list them in a manifest (`engine/templates/seeded.json`),

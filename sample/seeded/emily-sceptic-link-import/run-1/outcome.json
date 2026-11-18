@@ -1,0 +1,26 @@
+{
+  "verified": "not_met",
+  "self_report": "consistent",
+  "needs_met": 0,
+  "needs_partly": 0,
+  "needs_not_met": 2,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Save brown butter cookie recipe cleanly",
+      "verdict": "not_met",
+      "claimed": false,
+      "evidence": "",
+      "note": "No brown butter cookie recipe appears after the session. Only the sample Pancakes recipe exists, identical to before. The person says the import failed and they gave up, which matches the state."
+    },
+    {
+      "need": "Keep it with recipes to try, not made ones",
+      "verdict": "not_met",
+      "claimed": false,
+      "evidence": "",
+      "note": "No cookie recipe was saved, so it is not in any cookbook or list. The only cookbook is the pre-existing 'Breakfasts' holding Pancakes."
+    }
+  ]
+}

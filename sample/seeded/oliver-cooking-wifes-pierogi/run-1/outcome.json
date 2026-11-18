@@ -1,0 +1,26 @@
+{
+  "verified": "not_met",
+  "self_report": "consistent",
+  "needs_met": 0,
+  "needs_partly": 0,
+  "needs_not_met": 2,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Find and read Beata's pierogi recipe",
+      "verdict": "not_met",
+      "claimed": false,
+      "evidence": "",
+      "note": "No pierogi recipe exists in the app before or after the session. The list holds only Italian dishes, desserts, breakfasts and dinners. The person correctly says they could not find it."
+    },
+    {
+      "need": "Correct flour to 600 g in Beata's recipe",
+      "verdict": "not_met",
+      "claimed": false,
+      "evidence": "",
+      "note": "The state is unchanged and there is no pierogi recipe to edit. No 500 g or 600 g flour appears anywhere. The person gave up and said so."
+    }
+  ]
+}

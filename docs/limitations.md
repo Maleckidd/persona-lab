@@ -7,7 +7,8 @@ real sessions against KeepTaste, not tests.
 
 A reviewer's short version: the engine is good at catching a persona that
 *gave up on work it actually finished*, and unproven at catching the opposite.
-The measurement of how much it finds at all has not been made yet.
+How much it finds at all has been measured once, on six planted defects:
+3 of the 4 that somebody reached.
 
 ## The outcome check
 
@@ -72,7 +73,7 @@ whether the persona doubted the result.
 
 ## The rig
 
-### The two state reads ran at different font scales — fixed, not yet confirmed on a device
+### The two state reads ran at different font scales — fixed
 
 Until this fix the app was read before the run under the device's own profile
 and after it under the persona's, because the profile went on between the two
@@ -83,13 +84,18 @@ that the persona never wrote (`marek-60-sekund`, iteration 12, both runs).
 
 Both reads now run under the persona's profile (`read_before`,
 `engine/lib/persona-loop.sh:55`), at the price of one more cold start per run.
-Nothing has checked that on a device yet: an untouched app read at font scale
-1.0 and again at 1.3 must give an empty `state-new.md`. The two runs in
+Checked on the emulator on 2026-11-18, on the demo library, with the model
+replaced by a stand-in that ends each run on its first turn, so that nothing
+but the two reads can put a line in `state-new.md`. At font scale 1.3 both
+runs gave an empty `state-new.md`; at 1.0, two of three did. The third lost
+its first read to the problem in
+[the entry below](#a-state-read-can-tap-the-wrong-thing), not to the font
+scale: 134 lines came out as new. The two runs in
 `sample/` were read before the fix. Kuba ran at the device's 1.0, so his are
 unaffected; Sophie ran at 1.1, and every line in her `state-new.md` belongs to
 the recipe and the cookbook she made.
 
-### The device profile did not survive a killed session — fixed, not yet confirmed on a device
+### The device profile did not survive a killed session — fixed
 
 Until this fix the restore ran on INT and TERM only, and the "previous" value
 was read off the device at the start of each run. A session killed another way
@@ -106,9 +112,12 @@ finds, because what the device shows at that point is a persona's.
 
 The selftest covers the file rule and the traps against a stand-in `adb`,
 including a TERM in the middle of a run, and each of its 8 cases was checked by
-breaking the code it guards and watching it fail. The test the fix was written
-for has not been run: `kill -9` in the middle of a run at 1.3 on the emulator,
-then a new session whose demo reset passes.
+breaking the code it guards and watching it fail. On the emulator on
+2026-11-18, a run at 1.3 was killed in the middle of a turn with `kill -9` on
+its whole process group, so no trap ran. The device stayed at 1.3 and the file
+held the device's own `1.0 no`. The next session reported the leftover, put
+1.0 back before it touched the app, removed the file, passed the demo reset,
+and read an empty `state-new.md`.
 
 ### Corrupted typing is only partly caught
 
@@ -129,20 +138,61 @@ holds no per-turn call count, so re-verifying such a run reports the turn as a
 `stall` instead. The counter-example in `sample/` is one of those runs; its
 `README.md` works the case through.
 
+### A state read can tap the wrong thing
+
+The example config reads the app the way a user would: it taps recipe cards,
+cookbook tiles, list rows and Back, and never a control that changes data. One
+of the eleven reads taken on 2026-11-18 came back with a recipe's action menu
+(Edit, Delete, Cancel) and the system share sheet in it instead of the recipe.
+It ran while another job on the same host was copying 14 GB, and the ten
+taken on an idle host were clean, so load is the likely cause; a tap that
+registers late can land as a long press. Nothing was deleted, but a read that
+can open a menu with Delete in it could change what it reads. Nothing flags it:
+it shows up only as a burst of lines in `state-new.md` that nobody wrote. Keep
+the host otherwise idle during a session, and when `state-new.md` is longer
+than what the persona did, read it against `state-before.md`.
+
 ### The synthesis does not mention skipped runs
 
 A run that fails to start leaves no trace in the report. Nothing in a synthesis
 tells you it covers 9 runs rather than 10 — check `summary.json`.
 
+## The personas
+
+### A persona can be told it has a recipe the library does not hold
+
+The generator knows a start state only from the config's one-line description
+(`STATE_DESC_demo`: "several cookbooks with a dozen or so recipes"), not what
+is in it. In the seeded session of 2026-11-18 all three personas who started on
+the demo library were given a need about a recipe they "already have" —
+goulash, gingerbread, pierogi — and the library holds none of them (checked
+against each run's `state-before.md`). All three spent turns searching for
+it; for Oliver it was the whole run.
+
+A run like that measures how the app handles a missing recipe, not the task the
+persona was written for, and its `not_met` says nothing about the task. Read a
+`demo` persona's needs against `state-before.md` before you read its outcome.
+The fix is in the config, not the engine: a state description that names what
+the library holds.
+
 ## What has not been measured
 
-### No recall number
+### Recall rests on one session and four defects
 
-`--seeded` plants known defects and scores how many the personas find. It
-exists, it has a selftest, and it has never been run on a real session, so
-there is no answer to "what fraction of real problems does this find?" Every
-finding in `sample/` is something the personas did notice; nothing here counts
-what they walked past. *This entry is replaced by a number once a seeded session has been run.*
+One seeded session has been run (2026-11-18, six personas, one run each). Of
+six planted defects, two were never reached, three of the remaining four were
+reported, and one was walked past: recall 0.75, every verdict checked by hand
+([`sample/seeded/`](../sample/seeded/README.md)). Without the defect that
+overlaps a problem the normal build already has, 2 of 3.
+
+That is a small number on a small base. One defect either way moves it by 25
+points, and the one `missed` is a defect nobody had a reason to run into: the
+personas were inside a cookbook, but none wanted to add a recipe from there.
+One of the three hits was found partly because the personas were wrong about
+the library ([the entry above](#a-persona-can-be-told-it-has-a-recipe-the-library-does-not-hold)).
+It answers "do the personas catch planted problems at all" with a yes. It does
+not answer what fraction of an app's real problems a session finds, and it
+says nothing about false alarms.
 
 ### No closed loop in the ledger
 

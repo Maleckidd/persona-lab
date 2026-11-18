@@ -27,11 +27,12 @@ a way the result could be worthless, and what is done about it.
 | the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary each session | positive control: the same probe with a Read tool allowed must leak the canary | passed every session; [the check, with its control](sample/isolation/isolation.md) |
 | the persona believes it succeeded and it did not | the engine reads the app's stored state before and after, and judges each need against it: `verified`, `overclaimed` | selftest cases; every alarm checked by hand | `underclaimed` has fired on real runs (the picture above). `overclaimed` never has — [limitations](docs/limitations.md#overclaimed-has-never-fired-on-a-real-contradiction) |
 | the host slept, a call hung, the rig mangled the typing | per-turn timing; the run is marked `tainted` and the suspect turns are named | selftest; replayed on the logs of an earlier session | 3 of 10 runs flagged in the sample session; [the synthesis throws one finding out because of it](sample/) |
-| the personas walk past what is wrong | recall on deliberately planted defects (`--seeded`) | the manifest is hidden from the personas and from the scoring input | **not measured yet** — [limitations](docs/limitations.md#no-recall-number) |
+| the personas walk past what is wrong | recall on deliberately planted defects (`--seeded`) | the manifest is hidden from the personas and from the scoring input | one session: 3 of 4 reached defects reported, 2 never reached, every verdict checked by hand; six defects make it coarse — [the result](sample/seeded/README.md), [limitations](docs/limitations.md#recall-rests-on-one-session-and-four-defects) |
 | a fix is reported as holding and is not | the findings ledger: `fixed` → `verified` / `regressed` | selftest | **no loop closed yet** — [limitations](docs/limitations.md#no-closed-loop-in-the-ledger) |
 
-The last two rows are the honest gaps, and
-**[docs/limitations.md](docs/limitations.md)** has the rest of them: what the
+The last two rows are the thinnest: one measured once on four defects, the
+other not closed at all.
+**[docs/limitations.md](docs/limitations.md)** has the rest of the gaps: what the
 outcome check does badly, what the rig still gets wrong, and what a session
 costs. Read it before you read a result.
 

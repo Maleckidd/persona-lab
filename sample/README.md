@@ -5,6 +5,10 @@ Two runs out of a full session against KeepTaste 1.3.1 (session
 reproduce this from the repository — it needs macOS, an Android emulator, the
 `claude` CLI and the app — so this is the only place the output is visible.
 
+A second session, on a build with six planted defects, is in
+[`seeded/`](seeded/README.md): what was written down before it ran, the
+recall it came out with, and every verdict checked by hand.
+
 ## What to open first
 
 1. **`synthesis.md`** — the whole session's report: findings ranked, store

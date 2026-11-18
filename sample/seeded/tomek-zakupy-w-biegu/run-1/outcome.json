@@ -1,0 +1,33 @@
+{
+  "verified": "not_met",
+  "self_report": "consistent",
+  "needs_met": 0,
+  "needs_partly": 0,
+  "needs_not_met": 2,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Składniki gulaszu na liście zakupów",
+      "verdict": "not_met",
+      "claimed": false,
+      "evidence": "",
+      "note": "Lista zakupów bez zmian, nie ma składników gulaszu. Osoba sama przyznaje, że nie znalazła przepisu. W aplikacji brak przepisu z gulaszem w zarejestrowanych tytułach."
+    },
+    {
+      "need": "Rzeczy od żony na liście zakupów",
+      "verdict": "not_met",
+      "claimed": false,
+      "evidence": "",
+      "note": "Na liście nie ma mleka, papieru toaletowego, jogurtów, chleba razowego ani proszku do zmywarki. Banany były już na liście przed sesją. Wklejanie nie powiodło się (aplikacja wyrzuciła do Google Play), co zgadza się ze stanem."
+    },
+    {
+      "need": "Wysłanie żonie gotowej listy",
+      "verdict": "unverifiable",
+      "claimed": false,
+      "evidence": "",
+      "note": "Wysłanie listy poza aplikację nie zostawia śladu w zapisanym stanie. Osoba i tak zrezygnowała, a lista nie jest kompletna."
+    }
+  ]
+}

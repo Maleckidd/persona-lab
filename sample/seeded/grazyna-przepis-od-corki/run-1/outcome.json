@@ -1,0 +1,26 @@
+{
+  "verified": "met",
+  "self_report": "consistent",
+  "needs_met": 2,
+  "needs_partly": 0,
+  "needs_not_met": 0,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Sernik Agi zapisany ze składnikami",
+      "verdict": "met",
+      "claimed": true,
+      "evidence": "Sernik Agi: SKŁADNIKI: 1 kg twarogu sernikowego z wiaderka, 5 jajek, 200 g cukru, 1 budyn waniliowy... Spod: 200 g herbatnikow + 80 g masla; PRZYGOTOWANIE: Herbatniki pokruszyc...",
+      "note": "Wszystkie składniki i przygotowanie są obecne (bez polskich znaków, co jest akceptowalne). Czas 60 min trafił do osobnego pola, ale treść jest kompletna."
+    },
+    {
+      "need": "Osobna książka „Ciasta” z sernikiem",
+      "verdict": "met",
+      "claimed": true,
+      "evidence": "## Książka: Ciasta\n\n    Sernik Agi",
+      "note": "Książka „Ciasta” istnieje i zawiera sernik. Wcześniej była tylko książka „Śniadania”."
+    }
+  ]
+}

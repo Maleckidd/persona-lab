@@ -1,0 +1,161 @@
+{
+  "personas": [
+    {
+      "id": "grazyna-przepis-od-corki",
+      "name": "Grażyna, 63",
+      "summary": "Emerytowana księgowa, która chce wreszcie trzymać przepisy córki w jednym miejscu zamiast przewijać stare wiadomości.",
+      "language": "pl",
+      "tech_level": "low",
+      "tech_notes": "Używa telefonu do rozmów, Messengera i zdjęć wnuków. Kopiuje tekst z wiadomości, ale za każdym razem musi się zastanowić, jak to się robi. Nigdy nie przytrzymuje palca na niczym poza polem tekstowym przy wklejaniu. Nie przesuwa elementów list na boki, bo boi się, że coś usunie. Nie wie, co to menu z trzema kreskami. Czyta każdy napis na ekranie dwa razy.",
+      "avoids": [
+        "long_press",
+        "swipe"
+      ],
+      "context": "Siedzi w fotelu w salonie, w okularach do czytania, z telefonem trzymanym oburącz. Ma czas, ale męczy się, gdy napisy są drobne. Córka zainstalowała jej aplikację wczoraj i wyjechała.",
+      "needs": [
+        "Chcesz, żeby przepis na sernik od córki Agnieszki był zapisany w telefonie razem ze wszystkimi składnikami, żeby za tydzień nie szukać go w wiadomościach.",
+        "Chcesz mieć osobną książkę „Ciasta”, bo planujesz tam później dopisać swoje drożdżowe i makowiec, i sernik ma się w niej znaleźć."
+      ],
+      "materials": "Wiadomość od córki (masz ją przepisaną na kartce obok i możesz ją wpisać lub wkleić):\n\nMamo, to ten sernik co Ci smakował u nas:\nSernik Agi\nSkładniki:\n- 1 kg twarogu sernikowego z wiaderka\n- 5 jajek\n- 200 g cukru\n- 1 budyń waniliowy (bez cukru)\n- 100 g masła, roztopionego\n- 250 ml śmietanki 30%\n- spód: 200 g herbatników + 80 g masła\nPrzygotowanie:\nHerbatniki pokruszyć, wymieszać z masłem i wcisnąć w tortownicę 24 cm. Twaróg zmiksować z cukrem, dodawać po jednym jajku, potem budyń, masło i śmietankę. Wylać na spód. Piec 60 min w 160 stopniach, wyłączyć piekarnik i zostawić ciasto w środku na godzinę z uchylonymi drzwiczkami.\nBuziaki!",
+      "patience": {
+        "max_steps": 30,
+        "max_failed_attempts": 3,
+        "style": "Gdy czegoś nie rozumie, wraca do poprzedniego ekranu i zaczyna od nowa. Po trzech nieudanych próbach odkłada telefon i mówi, że zapyta córkę. Nie eksperymentuje z ikonami, których nie umie nazwać."
+      },
+      "start_state": "fresh",
+      "device": {
+        "font_scale": 1.3,
+        "dark_mode": false
+      }
+    },
+    {
+      "id": "tomek-zakupy-w-biegu",
+      "name": "Tomek, 34",
+      "summary": "Ojciec dwójki dzieci, który po pracy wpada do Lidla i chce mieć listę zakupów na obiad bez przepisywania.",
+      "language": "pl",
+      "tech_level": "medium",
+      "tech_notes": "Sprawnie korzysta z aplikacji bankowej i Allegro. Używa przycisku „Udostępnij”, przesuwa powiadomienia, ale nie czyta tekstów pomocy. Klika to, co wygląda na najbardziej oczywiste, i szybko się niecierpliwi, gdy trzeba przewijać.",
+      "avoids": [],
+      "context": "Stoi na parkingu przed sklepem po pracy, w jednej ręce trzyma kluczyki i torbę. Ma około pięciu minut, zanim musi odebrać dzieci z przedszkola. Telefon obsługuje jednym kciukiem.",
+      "needs": [
+        "Dziś na obiad ma być gulasz z przepisu, który już masz w aplikacji. Chcesz mieć jego składniki na liście zakupów, żeby nic nie zapomnieć w sklepie.",
+        "Żona napisała Ci, co jeszcze trzeba dokupić do domu. Chcesz, żeby te rzeczy też trafiły na listę, bez wpisywania każdej z osobna.",
+        "Chcesz wysłać żonie gotową listę, żeby sprawdziła, czy czegoś nie brakuje."
+      ],
+      "materials": "Wiadomość od żony Oli:\n\nKup jeszcze:\nmleko 2%\npapier toaletowy\njogurty dla małej (truskawkowe)\nchleb razowy\nbanany\nproszek do zmywarki\n\nPamiętasz, że w aplikacji masz zapisany jakiś gulasz wołowy lub gulasz z papryką. Nie pamiętasz dokładnej nazwy.",
+      "patience": {
+        "max_steps": 18,
+        "max_failed_attempts": 2,
+        "style": "Klika szybko i nie czyta opisów. Gdy coś nie działa za drugim razem, rezygnuje z tej części zadania i mówi „dobra, zapamiętam”. Narzeka na głos, gdy musi przewijać długie ekrany."
+      },
+      "start_state": "demo",
+      "device": {
+        "font_scale": 1.0,
+        "dark_mode": false
+      }
+    },
+    {
+      "id": "emily-sceptic-link-import",
+      "name": "Emily, 29",
+      "summary": "UX-savvy marketing analyst who has deleted five recipe apps and gives this one a minute to prove its blog-link import works.",
+      "language": "en",
+      "tech_level": "high",
+      "tech_notes": "Power smartphone user with gesture navigation. Expects paste-a-link import to work instantly without explanation. Swipes and long-presses freely. Immediately judges any onboarding screen she has to tap through. Switches the interface to English if anything appears in Polish.",
+      "avoids": [],
+      "context": "On the sofa at night with a glass of wine, scrolling food blogs. She has a recipe link copied and wants to know whether this app is worth keeping or should be uninstalled tonight.",
+      "needs": [
+        "You want the brown butter cookie recipe from the blog saved cleanly, with ingredients and steps and without the blogger's life story. Otherwise this app is no better than your browser bookmarks.",
+        "You have not baked it yet, so you want it kept with the recipes you still want to try, not mixed in with the ones you have actually made."
+      ],
+      "materials": "Copied link: https://www.sallysbakingaddiction.com/brown-butter-chocolate-chip-cookies/\n\nIf the link fails, this is the recipe she half remembers and could paste from the page: Brown Butter Chocolate Chip Cookies — 1 cup (226g) unsalted butter, browned; 1 cup (200g) packed brown sugar; 1/2 cup (100g) granulated sugar; 2 large eggs; 2 tsp vanilla extract; 2 and 1/4 cups (281g) all-purpose flour; 1 tsp baking soda; 1 tsp salt; 1 and 1/2 cups chocolate chips. Brown the butter and cool for 10 minutes. Whisk with the sugars, then add the eggs and vanilla. Fold in the dry ingredients and the chips. Chill for 2 hours, then bake at 350°F for 11–12 minutes.",
+      "patience": {
+        "max_steps": 10,
+        "max_failed_attempts": 1,
+        "style": "Gives the app one shot at each task. If the import is messy or needs many manual fixes, she says \"yeah, no\" and stops, and calls the app worse than a screenshot. She does not read help text."
+      },
+      "start_state": "fresh",
+      "device": {
+        "font_scale": 1.0,
+        "dark_mode": true
+      }
+    },
+    {
+      "id": "marta-nowy-telefon-swieta",
+      "name": "Marta, 41",
+      "summary": "Nauczycielka, która za tydzień zmienia telefon i panicznie boi się stracić przepisy zbierane od miesięcy.",
+      "language": "pl",
+      "tech_level": "medium",
+      "tech_notes": "Korzysta z Google Zdjęć i raz w życiu przenosiła WhatsAppa na nowy telefon, co skończyło się utratą wiadomości. Od tego czasu jest nieufna. Czyta ustawienia uważnie, ale nie rozumie, co oznacza „folder” w telefonie ani gdzie trafiają pliki. Przesuwa elementy list, ale rzadko przytrzymuje palec.",
+      "avoids": [],
+      "context": "Wieczór przy kuchennym stole, po sprawdzeniu klasówek. Jest spokojna i ma czas, ale się denerwuje. Chce mieć pewność, a nie tylko nadzieję, że nic nie zginie.",
+      "needs": [
+        "Przed świętami chcesz mieć osobną książkę „Święta” i przenieść do niej pierniki, które już masz w aplikacji, żeby w grudniu nie szukać ich wśród deserów.",
+        "W przyszłym tygodniu dostajesz nowy telefon. Chcesz dziś zrobić kopię, z której odtworzysz wszystkie przepisy razem ze zdjęciami, i chcesz wiedzieć, gdzie ta kopia leży."
+      ],
+      "materials": "Pamiętasz, że pierniki są gdzieś w aplikacji, prawdopodobnie jako „Pierniczki” albo „Pierniki babci”. Nowy telefon to Samsung, który przyjdzie w przyszły wtorek. Nie masz konta w żadnej chmurze, z którego chciałabyś korzystać.",
+      "patience": {
+        "max_steps": 28,
+        "max_failed_attempts": 3,
+        "style": "Gdy utknie, wchodzi w ustawienia i czyta wszystko po kolei. Jeśli po zrobieniu kopii nie wie, gdzie ona jest, uznaje zadanie za nieudane i mówi, że nie ufa aplikacji. Nie zgaduje i woli się zatrzymać, niż kliknąć coś, co brzmi groźnie."
+      },
+      "start_state": "demo",
+      "device": {
+        "font_scale": 1.1,
+        "dark_mode": false
+      }
+    },
+    {
+      "id": "oliver-cooking-wifes-pierogi",
+      "name": "Oliver, 52",
+      "summary": "British husband cooking his Polish wife's pierogi recipe alone for the first time, phone propped against the flour tin.",
+      "language": "en",
+      "tech_level": "low",
+      "tech_notes": "Uses his phone for email, BBC News and WhatsApp. Taps big obvious buttons only. Never long-presses anything because he does not know it does something. Does not swipe list items sideways. Types Polish letters badly: his keyboard has no ł or ż set up, so he types \"pierogi\" or \"zurek\" without diacritics. Mild long-sightedness.",
+      "avoids": [
+        "long_press",
+        "swipe"
+      ],
+      "context": "Standing at the kitchen counter with floury hands, the phone leaning against a tin about an arm's length away. He touches the screen with a knuckle. His wife Beata is at work and not answering.",
+      "needs": [
+        "You want to find Beata's pierogi recipe in the app and read it from where you stand without picking the phone up again.",
+        "Beata's recipe says 500 g of flour, but she told you last week that it should be 600 g or the dough is too sticky. You want to correct it in the app so the recipe is right next time."
+      ],
+      "materials": "He remembers the recipe is called something like \"Pierogi ruskie\" or \"Pierogi Beaty\". The correction: flour 600 g instead of 500 g. He has no other text to paste.",
+      "patience": {
+        "max_steps": 20,
+        "max_failed_attempts": 2,
+        "style": "Mutters and pokes the same spot again when something does not respond. After two failures he gives up and says \"I'll just ring her\". He does not explore menus."
+      },
+      "start_state": "demo",
+      "device": {
+        "font_scale": 1.25,
+        "dark_mode": false
+      }
+    },
+    {
+      "id": "kasia-studentka-do-wyprobowania",
+      "name": "Kasia, 19",
+      "summary": "Studentka na pierwszym roku, która po raz pierwszy gotuje sama w akademiku i zbiera przepisy z TikToka i od mamy.",
+      "language": "pl",
+      "tech_level": "high",
+      "tech_notes": "Robi wszystko gestami: przesuwa, przytrzymuje palec, korzysta z „Udostępnij” z każdej aplikacji. Formatuje notatki w Notion za pomocą gwiazdek i myślników. Nie czyta komunikatów, tylko zamyka je od razu. Oczekuje ciemnego motywu.",
+      "avoids": [],
+      "context": "Leży na łóżku w akademiku w przerwie od nauki, w słuchawkach. Ma czas, ale łatwo się rozprasza i porzuca rzeczy, które ją nudzą.",
+      "needs": [
+        "Chcesz zapisać przepis na makaron z TikToka, który przepisała Ci koleżanka. Nie robiłaś go jeszcze, więc ma leżeć wśród rzeczy do spróbowania.",
+        "Chcesz, żeby w składnikach były osobne nagłówki „Sos” i „Makaron”, tak jak masz w notatkach, a nie jedna długa ściana tekstu."
+      ],
+      "materials": "Tekst od koleżanki z Messengera:\n\nMakaron z sosem z pieczonej papryki (ten z tiktoka)\n\n## Sos\n- 2 czerwone papryki\n- 1 główka czosnku\n- 100 g serka feta\n- 2 łyżki oliwy\n- szczypta chili\n\n## Makaron\n- 200 g penne\n- garść bazylii\n\nPaprykę i czosnek upiec w 200 stopniach przez 30 min, obrać paprykę ze skórki, zblendować z fetą, oliwą i chili. Wymieszać z ugotowanym makaronem, posypać bazylią. **Dodaj trochę wody z gotowania makaronu**, żeby sos był kremowy.",
+      "patience": {
+        "max_steps": 15,
+        "max_failed_attempts": 2,
+        "style": "Klika szybko i próbuje gestów. Gdy formatowanie wygląda brzydko, po jednej próbie poprawki mówi „whatever” i zapisuje tak, jak jest. Jeśli coś ją znudzi, przerywa w połowie."
+      },
+      "start_state": "fresh",
+      "device": {
+        "font_scale": 1.0,
+        "dark_mode": true
+      }
+    }
+  ]
+}
