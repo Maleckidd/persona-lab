@@ -177,7 +177,7 @@ dropping characters under load. The stand-in answers the same way every time.
 Those, and every config's own hooks, are exercised only by real sessions,
 which cost money and need an emulator. The selftest is written against the
 system bash 3.2 on macOS; CI also runs it on Linux (bash 5, GNU tools), where
-it passed on the first run and is kept non-blocking.
+it passed on the first run and now fails the build like the macOS job.
 
 Two import fixtures fetch live third-party pages
 (`examples/keeptaste/config-import/clipboard/url-ok.txt`,

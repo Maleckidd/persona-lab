@@ -79,6 +79,7 @@ model.
 | | |
 |---|---|
 | [docs/limitations.md](docs/limitations.md) | what this does badly, and what has not been measured |
+| [docs/where-this-fits.md](docs/where-this-fits.md) | what this is for next to unit and end-to-end tests, and what it is not for |
 | [docs/how-it-works.md](docs/how-it-works.md) | the session step by step, the turn loop, isolation, the rig checks, the output tree, requirements |
 | [docs/outcome-check.md](docs/outcome-check.md) | reading the app's state instead of the persona's word |
 | [docs/writing-a-config.md](docs/writing-a-config.md) | setting this up for your own app |
