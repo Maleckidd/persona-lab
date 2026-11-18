@@ -15,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Parse every shell script under engine/
         run: |
           status=0
@@ -31,7 +31,7 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Versions
         run: /bin/bash --version | head -1; jq --version; perl --version | sed -n 2p
       - name: Parse every shell script under engine/ with bash 3.2
@@ -45,15 +45,13 @@ jobs:
         run: /bin/bash engine/selftest.sh
 
   selftest-linux:
-    # The engine has only ever been run on macOS (bash 3.2, BSD userland).
-    # This job says whether it also holds on GNU tools; it is allowed to fail
-    # until someone has looked at the first failure.
-    name: selftest (Linux, non-blocking)
+    # Sessions run on macOS only, but the engine's logic should not depend on
+    # the BSD userland: this job runs the same selftest on bash 5 and GNU tools.
+    name: selftest (Linux)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Versions
         run: bash --version | head -1; jq --version; perl --version | sed -n 2p
       - name: Run the selftest
