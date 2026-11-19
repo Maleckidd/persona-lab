@@ -84,14 +84,22 @@ needs. Kuba run 1 is clean under either engine.
 
 ## Isolation
 
-`isolation/isolation.md` shows the persona model has no tools, no MCP servers
-and no access to the app's source, verified with a canary file and five
-repo-only identifiers. It is **not** this session's check: it comes from the
-deploy test of 2026-11-14, which is the only recent one run with
-`--with-control`, the positive control that proves the detector can fail — the
-canary does leak when a Read tool is deliberately allowed. Home and sandbox
-paths in it were replaced with `/Users/you` and `$TMPDIR`; nothing else was
-edited.
+Each check shows the persona model has no tools, no MCP servers and no access
+to the app's source, verified with a canary file and five repo-only
+identifiers. There are three:
+
+- [`isolation/session.md`](isolation/session.md) — this session's own check,
+  run before its personas.
+- [`seeded/isolation.md`](seeded/isolation.md) — the seeded session's own
+  check.
+- [`isolation/isolation.md`](isolation/isolation.md) — the deploy test of
+  2026-11-14, the only recent one run with `--with-control`: the positive
+  control that proves the detector can fail — the canary does leak when a
+  Read tool is deliberately allowed.
+
+A session runs the check without `--with-control`, so the first two have no
+control section. Home and sandbox paths in all three were replaced with
+`/Users/you` and `$TMPDIR`; nothing else was edited.
 
 ## The personas are invented
 
