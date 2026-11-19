@@ -5,11 +5,18 @@
 
 ## What runs
 
-- The app: KeepTaste at commit `08d9e4a` (the same app code as the 1.3.1 build
-  the other sessions ran on), with `seeded.patch` applied. The patch plants six
+- The app: KeepTaste at commit
+  [`e394933`](https://github.com/Maleckidd/KeepTaste/commit/e394933), the 1.3.0
+  release, with `seeded.patch` applied. The 1.3.1 build the other sessions ran
+  on differs from it only in import's text clean-up (`utils/ocrText.ts`,
+  `utils/recipeImport.ts`), none of it in the three files the patch touches;
+  the build reports itself as 1.3.3 because Gradle ran on the untracked
+  `android/` project last generated for the 1.3.3 release. The patch plants six
   usability defects, listed in `seeded.json`
   ([`examples/keeptaste/config-seeded/`](../../examples/keeptaste/config-seeded/)).
   No persona, and no synthesis, is told the manifest exists.
+  *(Corrected on 2026-11-20: this line first named a commit from the app's
+  history before it was rebuilt for publication, and called the code 1.3.1.)*
 - The study: `config-seeded`, which is the normal study with six generated
   personas and one run each.
 - The engine at the commit recorded in `summary.json`, with the fixes of step 7
