@@ -41,7 +41,7 @@ a way the result could be worthless, and what is done about it.
 
 | What could make the result worthless | Control | How the control is itself checked | Where it stands |
 |---|---|---|---|
-| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary before the personas run, unless `--skip-isolation` | positive control: the same probe with a Read tool allowed must leak the canary | passed in each published session — [sample](sample/isolation/session.md), [seeded](sample/seeded/isolation.md); the positive control ran on a deploy test — [its result](sample/isolation/isolation.md). The run does not record whether the check ran — [limitations](docs/limitations.md) |
+| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary before the personas run, unless `--skip-isolation` | positive control: the same probe with a Read tool allowed must leak the canary | passed in each published session — [sample](sample/isolation/session.md), [seeded](sample/seeded/isolation.md); the positive control ran on a deploy test — [its result](sample/isolation/isolation.md). The run does not record whether the check ran — [limitations](docs/limitations.md#nothing-records-whether-the-isolation-check-ran); under a CLI login the persona also gets the CLI's own context note — [limitations](docs/limitations.md#under-a-cli-login-the-persona-also-gets-the-clis-own-context) |
 | the persona believes it succeeded and it did not | the engine reads the app's stored state before and after, and judges each need against it: `verified`, `overclaimed` | selftest cases; every alarm checked by hand | `underclaimed` has fired on real runs (the picture above). `overclaimed` never has — [limitations](docs/limitations.md#overclaimed-has-never-fired-on-a-real-contradiction) |
 | the host slept, a call hung, the rig mangled the typing | per-turn timing; the run is marked `tainted` and the suspect turns are named | selftest; replayed on the logs of an earlier session | 3 of 10 runs flagged in the sample session; [the synthesis throws one finding out because of it](sample/) |
 | the personas walk past what is wrong | recall on deliberately planted defects (`--seeded`) | the manifest is hidden from the personas and from the scoring input | one session: 3 of 4 reached defects reported, 2 never reached, every verdict checked by hand; six defects make it coarse — [the result](sample/seeded/README.md), [limitations](docs/limitations.md#recall-rests-on-one-session-and-four-defects) |
@@ -84,8 +84,8 @@ bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --count 1 --runs 1   # smok
 
 Needs macOS, `adb` with an emulator, `jq`, `perl`, `python3`, `ffmpeg`, and the
 `claude` CLI authenticated for non-interactive use. A full session on the
-example app is about 2 h and $7
-([measured once](docs/limitations.md#cost-time-and-platform)). A smoke run has
+example app took about 2 h of model time and $6.61, measured once; its wall
+clock was longer ([why](docs/limitations.md#cost-time-and-platform)). A smoke run has
 not been timed as a whole: one persona run in the
 [seeded session](sample/seeded/summary.json) took 7–12 min and $0.17–0.66,
 and the persona generator and the synthesis come on top.

@@ -175,6 +175,25 @@ persona was written for, and its `not_met` says nothing about the task. Read a
 The fix is in the config, not the engine: a state description that names what
 the library holds.
 
+### Under a CLI login, the persona also gets the CLI's own context
+
+With no `ANTHROPIC_API_KEY`, persona calls run on the CLI's login, and the CLI
+adds its own context note to the call even with `--tools ""`,
+`--setting-sources ""` and a replaced system prompt: the account's e-mail
+address, the working directory and its git status, the platform, the shell,
+the OS version, the model name and the date. The seeded session's isolation
+probe mentions it in its own answer ([`isolation.md`](../sample/seeded/isolation.md),
+"an automatic context note with the user's account email"), and a direct probe
+with the engine's persona flags on 2026-11-20 (CLI 2.1.326) listed those
+kinds of item. Found by reading that answer and re-asking; the values were
+not printed.
+
+None of it is the app's source, so the isolation check passes and the canary
+stays unread. But the persona is not given the brief alone: it knows it runs
+in a temporary directory on a Mac, and the operator's e-mail address reaches
+the model on every persona turn. Whether `--bare`, used when
+`ANTHROPIC_API_KEY` is set, drops this note has not been checked.
+
 ## What has not been measured
 
 ### Recall rests on one session and four defects
