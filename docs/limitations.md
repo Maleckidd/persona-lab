@@ -209,6 +209,37 @@ are not users, and nothing here measures whether anyone wants the app. Findings
 from a session are hypotheses about usability, at the resolution of what a
 model can see in a screenshot.
 
+## What a session records
+
+### A session records the model alias, not the model
+
+The config names models by alias: `MODEL_PERSONA=sonnet`,
+`MODEL_GENERATOR=opus`, `MODEL_SYNTHESIS=opus`
+(`engine/templates/config.sh:77-79`), and by default the judge and the scorer
+inherit them. The CLI resolves an alias to whatever model it points at that day, and
+the CLI is whichever `claude` is on `PATH`, else the newest copy bundled with
+the desktop app (`engine/lib/common.sh:142`). The session's `summary.json`
+records `session`, `app`, `version`, `engine` and `runs`
+(`engine/run.sh:322`): the engine commit, but no model and no CLI version.
+`isolation.md` names the persona alias and the CLI version, and the raw
+transcripts a session keeps (`*.jsonl`) open with the resolved model, but the
+engine reads neither back, and `sample/` publishes no transcripts. Found by
+reading the code against a kept session.
+
+A published number cannot be tied to the model that produced it, and two
+sessions months apart may be comparing two models, not two builds.
+
+### Nothing records whether the isolation check ran
+
+`engine/run.sh --skip-isolation` skips step 2 (`engine/run.sh:85`, `:246`),
+and `summary.json` has no field for it. The engine logs to the terminal only,
+so the one trace of the check is the session's `isolation/` directory. Found
+by reading the code.
+
+"Isolation passed" can be shown only for a session that kept `isolation/`. A
+session published without it cannot be told apart from one that never ran
+the check; read the claim against that session's own `isolation/isolation.md`.
+
 ## Coverage of the code itself
 
 The selftest has 90 cases and needs no device and no model. Besides the
@@ -252,3 +283,24 @@ stalls. On the demo library the state reads dominate a healthy run — in the
 
 macOS only for a session (`sips`, and `caffeinate` where present). Video needs
 an emulator.
+
+### Runs are sequential, on one device
+
+A session drives one device (`ANDROID_SERIAL`) and runs one persona run at a
+time, each persona's runs in turn (`engine/run.sh:315-320`); nothing in
+`engine/` runs two at once, and a second emulator does not help. Wall-clock
+time grows linearly with personas × runs: the defaults (`PERSONA_COUNT=5`,
+`RUNS_PER_PERSONA=2`) are ten runs back to back, and a single run in the
+`sample/` counter-example took 996 s.
+
+### Every model call goes through one vendor's CLI
+
+All model calls go through Anthropic's `claude` CLI, in one wrapper
+(`claude_cli`, `engine/lib/common.sh:161`), and lean on its flags:
+`--tools ""`, `--setting-sources ""`, `--max-budget-usd`, stream-json in and
+out. The isolation is built from those flags. There is no other provider and
+no API client. The CLI has to be authenticated for a non-interactive process
+(`ANTHROPIC_API_KEY`, or a `claude setup-token` login; see
+[Requirements](how-it-works.md#requirements)), and the copy bundled with the
+desktop app is not logged in on its own. A change in the CLI's flags or in how
+it logs in can stop a session or change what a call sees.
