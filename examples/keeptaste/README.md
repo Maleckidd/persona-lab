@@ -2,7 +2,7 @@
 
 A snapshot, not a working copy. These four directories are `persona-lab/config*`
 from [KeepTaste](https://github.com/Maleckidd/KeepTaste), a recipe manager for
-Android, as of commit `d828466` (2026-11-14). The working configs stay in that
+Android, as of commit [`131d5c2`](https://github.com/Maleckidd/KeepTaste/commit/131d5c2) (2026-11-14). The working configs stay in that
 repository, next to the `history/` and `runs/` of its studies. They are here to
 show what a real config looks like: hooks, start states, a focused study, a
 research-team study and a calibration build.
