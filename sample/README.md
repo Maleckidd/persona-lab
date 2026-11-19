@@ -125,6 +125,6 @@ from her sister. Any likeness to a real person is a coincidence.
 - the synthesis's own preamble, cut by hand after the session. Nothing else in
   it was changed.
 
-Also not here, because neither exists yet: a seeded-defect score
-(`seeded-score.md`) and a ledger entry with a closed loop. See
+Also not here, because it does not exist yet: a ledger entry with a closed
+loop. See
 [`docs/limitations.md`](../docs/limitations.md).

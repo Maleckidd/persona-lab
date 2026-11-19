@@ -17,6 +17,23 @@ what you get from asking a model to "test this app" — stops at "the save may
 not work". With the state read it becomes a different finding, and the right
 one: the save works, and a freshly saved recipe is nowhere the user looks.
 
+Two kinds of tool already answer part of this. One asks a model what a user
+would think of a product and never touches the app; the other drives the app
+looking for functional bugs it can assert. This one sits between them: the
+persona is given a need and a screen, the engine performs its actions on a
+real build, and then the engine — not the persona — reads what the app stored
+and judges each need against it. It is for the flow that passes every
+assertion a developer would write and still leaves the person unable to tell
+whether it worked; the table below lists what checks that output, and how far
+each check has itself been tested.
+
+The engine was built against KeepTaste, a recipe manager published on Google
+Play ([repository](https://github.com/Maleckidd/KeepTaste),
+[Play listing](https://play.google.com/store/apps/details?id=com.damianmalecki.keeptaste));
+both sessions in `sample/` ran on it, and
+[`examples/keeptaste/`](examples/keeptaste/README.md) is a snapshot of its
+configs.
+
 ## What the engine does not take on trust
 
 A prompt can ask a model to behave; only the engine can make sure. Each row is
@@ -67,7 +84,11 @@ bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --count 1 --runs 1   # smok
 
 Needs macOS, `adb` with an emulator, `jq`, `perl`, `python3`, `ffmpeg`, and the
 `claude` CLI authenticated for non-interactive use. A full session on the
-example app is about 2 h and $7; a smoke run about 15 min and $1.50.
+example app is about 2 h and $7
+([measured once](docs/limitations.md#cost-time-and-platform)). A smoke run has
+not been timed as a whole: one persona run in the
+[seeded session](sample/seeded/summary.json) took 7–12 min and $0.17–0.66,
+and the persona generator and the synthesis come on top.
 
 `bash engine/selftest.sh` checks the engine's own logic — rig incidents,
 outcome verdicts, the evidence rule, the ledger, the comparison, the seeded

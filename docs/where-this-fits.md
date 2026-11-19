@@ -79,5 +79,5 @@ a worked example once one has.
 | persona-lab | flows nobody scripted, against someone else's expectations, with the stored state as the referee | the engine, from the app's public description | per study |
 
 The engine's own logic is covered by the first kind: `engine/selftest.sh`, in
-CI on every push. The app's unit and end-to-end tests live in the app's
-repository, which is not public yet.
+CI on every push. The app's unit and end-to-end tests live in
+[the app's repository](https://github.com/Maleckidd/KeepTaste).
