@@ -20,6 +20,10 @@ recall it came out with, and every verdict checked by hand.
    Sophie's English, and the judge's notes in `outcome.json` follow the
    persona. The verdict fields (`verified`, `self_report`, `tainted`,
    `verdict`) read the same in either.
+   **No Polish?** Read [`synthesis.en-key.md`](synthesis.en-key.md) beside
+   it: the counts, a map of the sections, the headline findings and what the
+   rig section threw out, in English, without translating the report. Its
+   screenshot links do not open — see [below](#what-is-not-here).
 2. **One run**, in this order: `persona.json` (who the engine simulated, and
    what they were asked to get done) → `think-aloud.md` (every turn: the
    screenshot the persona saw, their notes, the action the engine performed) →
@@ -101,9 +105,11 @@ from her sister. Any likeness to a real person is a coincidence.
 - the other 8 runs of the session (Halina, Marta and Daniel twice each, Kuba
   run 2, Sophie run 1).
   Session-level `summary.json`, `personas.json` and `findings.json` cover all
-  10, and `synthesis.md` discusses all 10 — its 57 screenshot links are
-  relative to the app repository's `persona-lab/runs/20261114-200122/` and do
-  not resolve here. Links inside `think-aloud.md` and `report.md` do;
+  10, and `synthesis.md` discusses all 10 — its 57 screenshot links point
+  into the session's working directory (`persona-lab/runs/20261114-200122/`),
+  which is not published here or in the app's repository. The 8 that belong
+  to the two runs above resolve in this folder once that prefix is dropped.
+  Links inside `think-aloud.md` and `report.md` do resolve;
 - `video.webm` (124 MB and 196 MB for these two runs; `video.mp4` is kept),
   `steps/*.jsonl` and the isolation probe transcripts — CLI transcripts
   carrying local paths and session metadata — and `report.raw.md`, the model's
