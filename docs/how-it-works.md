@@ -27,7 +27,11 @@ A session step by step. The outcome check has its own page
    Read/Grep/Glob) groups, dedupes and prioritises findings by how many
    personas hit them, maps them to screens and components, judges the store
    listing's promises against what happened, and matches every finding with
-   the ledger of earlier sessions.
+   the ledger of earlier sessions. It sees the repository through those tools
+   only: no settings, plugins or hooks, no `CLAUDE.md` (the repo's or the
+   user's own `~/.claude/CLAUDE.md`) and no auto-memory, so neither the
+   developer's notes about the app nor the person's own Claude setup reach the
+   verdict.
 6. **Calibration** — only with `--seeded`: how many defects planted in this
    build the personas caught.
 
@@ -46,7 +50,11 @@ validates the action, performs it with `adb shell input`, and repeats.
 Every persona call (and the persona generator) runs as
 `claude -p --tools "" --strict-mcp-config --setting-sources "" --system-prompt …`
 in a fresh empty directory outside the repository (`--bare` too when
-`ANTHROPIC_API_KEY` is set). With no tools there is nothing to read files with;
+`ANTHROPIC_API_KEY` is set). Every call the engine makes also runs with
+`CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and `CLAUDE_CODE_DISABLE_CLAUDE_MDS=1`
+(`claude_cli` in `engine/lib/common.sh`): `--setting-sources ""` keeps
+`CLAUDE.md` out but not the auto-memory Claude Code keeps for the directory a
+call runs in. With no tools there is nothing to read files with;
 isolation comes from how the call is built, not from permission rules. The
 check proves it each session: the persona is told to read a canary file
 written into the repo moments before, `SPEC.md` and `CLAUDE.md`, and to quote

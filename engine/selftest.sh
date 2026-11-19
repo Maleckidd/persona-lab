@@ -296,6 +296,38 @@ check "seeded: recall over the defects somebody reached; skipped and unknown ver
   "$(jq -c '[.reported, .noticed, .missed, .not_exercised, .reachable, .recall]' "$NEW/seeded-score.json")" '[1,1,2,1,4,0.25]'
 check "seeded: one table row per planted defect" "$(grep -c '^| S' "$NEW/seeded-score.md")" "5"
 
+# --- what every model call starts with, against a stand-in CLI -------------------------------
+
+# The stand-in writes down its environment and arguments. The synthesis is the call
+# that runs inside the app repository, so it is the one that would pick up the
+# repository's CLAUDE.md, the developer's auto-memory and the person's own Claude
+# setup if a call path skipped claude_cli or --setting-sources "".
+cat >"$T/stub-env-claude" <<'EOF2'
+#!/bin/bash
+cat >/dev/null
+{
+  printf 'env mds=%s mem=%s cc=%s\n' "${CLAUDE_CODE_DISABLE_CLAUDE_MDS:-}" "${CLAUDE_CODE_DISABLE_AUTO_MEMORY:-}" "${CLAUDECODE:-}"
+  printf 'args'; printf ' [%s]' "$@"; printf '\n'
+} >>"$STUB_ENV_LOG"
+jq -cn '{type: "result", total_cost_usd: 0, result: "ok"}'
+EOF2
+chmod +x "$T/stub-env-claude"
+(
+  export STUB_ENV_LOG="$T/env-calls" CLAUDECODE=1
+  CLAUDE_BIN="$T/stub-env-claude"
+  APP_REPO="$T/env-app"
+  mkdir -p "$APP_REPO" "$T/env-scope"
+  echo 'x' >"$T/env-prompt.md"
+  repo_claude stub 1 "$T/env-prompt.md" "$T/env-repo.json"
+  echo '{}' | isolated_claude stub "$T/env-prompt.md" "$T/env-iso.jsonl"
+  web_claude stub 1 "$T/env-prompt.md" "$T/env-web.json"
+  scoped_claude stub 1 "$T/env-prompt.md" "$T/env-scope.jsonl" "$T/env-scope"
+) >/dev/null 2>&1
+check "model calls: all four paths turn off CLAUDE.md and auto-memory and drop the session marker" \
+  "$(grep -c '^env mds=1 mem=1 cc=$' "$T/env-calls" 2>/dev/null)" "4"
+check "model calls: all four paths, the synthesis included, load no settings" \
+  "$(grep -c '^args.* \[--setting-sources\] \[\] ' "$T/env-calls" 2>/dev/null)" "4"
+
 # --- the history: links do not depend on what the folders are called -------------------------
 
 # shellcheck source=lib/history.sh

@@ -143,7 +143,7 @@ if [ $CONTROL = 1 ]; then
   sandbox="$(mktemp -d "${TMPDIR:-/tmp}/persona-control.XXXXXX")"
   # shellcheck disable=SC2086
   (cd "$sandbox" && user_message "$(cat "$OUT/probe.md")" |
-    env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p $CLAUDE_AUTH_FLAGS \
+    claude_cli -p $CLAUDE_AUTH_FLAGS \
       --input-format stream-json --output-format stream-json --verbose \
       --tools "Read" --allowedTools "Read(/$CANARY)" --strict-mcp-config --setting-sources "" \
       --no-session-persistence --model "$MODEL_PERSONA" --max-budget-usd "$MAX_BUDGET_PER_CALL" \

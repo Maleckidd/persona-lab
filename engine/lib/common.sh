@@ -150,6 +150,20 @@ resolve_claude() {
   fi
 }
 
+# claude_cli <args...> — every model call the engine makes goes through here.
+# It drops the markers of the Claude Code session the engine may be running in,
+# and turns off two context sources outright: the auto-memory Claude Code keeps
+# for the directory a call runs in, which --setting-sources "" does not stop,
+# and CLAUDE.md files (the user's ~/.claude/CLAUDE.md and the repository's),
+# which it does stop, here made independent of the flag. Without this, whatever
+# the person running the study has in their own Claude setup can reach the
+# model, and a session stops being comparable with the last one.
+claude_cli() {
+  env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT \
+    CLAUDE_CODE_DISABLE_CLAUDE_MDS=1 CLAUDE_CODE_DISABLE_AUTO_MEMORY=1 \
+    "$CLAUDE_BIN" "$@"
+}
+
 # render_template <file> — prints the file with every {{KEY}} replaced by the
 # value of the environment variable T_KEY. Unknown keys are left in place, so a
 # typo shows up in the output instead of silently becoming an empty string.
@@ -167,6 +181,7 @@ render_template() {
 #   --tools ""            no built-in tools at all: no Read, no Bash, no Grep…
 #   --strict-mcp-config   no MCP servers (none are passed)
 #   --setting-sources ""  no user/project/local settings, hence no plugins
+#   claude_cli            no CLAUDE.md, no auto-memory (see above)
 #   --system-prompt       replaces the default coding-agent prompt entirely
 #   cwd = fresh empty dir outside any repository; checked empty afterwards
 # The device is driven by the engine, never by the model.
@@ -176,7 +191,7 @@ isolated_claude() {
   # shellcheck disable=SC2086
   (
     cd "$sandbox" &&
-      env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p $CLAUDE_AUTH_FLAGS \
+      claude_cli -p $CLAUDE_AUTH_FLAGS \
         --input-format stream-json --output-format stream-json --verbose \
         --tools "" --strict-mcp-config --setting-sources "" \
         --no-session-persistence \
@@ -197,15 +212,18 @@ isolated_claude() {
 
 # repo_claude <model> <budget> <prompt-file> <out.json> — the synthesis agent.
 # Runs in the app repository with read-only tools; it is the one component
-# that is supposed to see code.
+# that is supposed to see code. It sees it through those tools only: no
+# settings, plugins or hooks (--setting-sources ""), and through claude_cli no
+# CLAUDE.md and no auto-memory, so the developer's notes about the app and the
+# person's own Claude instructions stay out of the verdict.
 repo_claude() {
   local model="$1" budget="$2" prompt="$3" out="$4"
   (
     cd "$APP_REPO" &&
-      env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p \
+      claude_cli -p \
         --output-format json \
         --tools "Read,Grep,Glob" --allowedTools "Read" "Grep" "Glob" \
-        --strict-mcp-config --no-session-persistence \
+        --strict-mcp-config --setting-sources "" --no-session-persistence \
         --model "$model" --max-budget-usd "$budget" <"$prompt"
   ) >"$out" 2>"$out.stderr"
   local rc=$?
@@ -243,7 +261,7 @@ scoped_claude() {
   local model="$1" budget="$2" prompt="$3" out="$4" scope="$5" rc
   (
     cd "$scope" &&
-      env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p \
+      claude_cli -p \
         --output-format stream-json --verbose \
         --tools "Read,Grep,Glob" \
         --strict-mcp-config --setting-sources "" --no-session-persistence \
@@ -282,7 +300,7 @@ web_claude() {
   sandbox="$(mktemp -d "${TMPDIR:-/tmp}/persona-web.XXXXXX")"
   (
     cd "$sandbox" &&
-      env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT "$CLAUDE_BIN" -p \
+      claude_cli -p \
         --output-format json \
         --tools "WebSearch,WebFetch" --allowedTools "WebSearch" "WebFetch" \
         --strict-mcp-config --setting-sources "" --no-session-persistence \

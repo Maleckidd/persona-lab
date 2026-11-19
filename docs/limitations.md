@@ -211,15 +211,19 @@ model can see in a screenshot.
 
 ## Coverage of the code itself
 
-The selftest has 88 cases and needs no device and no model. Besides the
+The selftest has 90 cases and needs no device and no model. Besides the
 logic that decides, it runs whole persona runs end to end
-(`engine/selftest.sh:400`): `run_persona` as a session calls it, with `adb` and
+(`engine/selftest.sh:432`): `run_persona` as a session calls it, with `adb` and
 `sips` replaced on `PATH`, the CLI replaced by a script that answers each turn
 from a queue, and the config's hooks as shell functions. That covers what the
 loop itself enforces — the patience cap, refused gestures, coordinates off the
 screen, invalid replies, a failed reset, the order of the state reads and the
 profile, the evidence rule on the report — and each of those cases was checked
-by breaking the code it guards.
+by breaking the code it guards. Two more cases check that the four model-call
+paths in `engine/lib/common.sh`, the synthesis included, start with
+`CLAUDE_CODE_DISABLE_CLAUDE_MDS=1`, `CLAUDE_CODE_DISABLE_AUTO_MEMORY=1` and
+`--setting-sources ""`; they show that a stand-in CLI is handed them, not that
+the real CLI honours them.
 
 What it cannot cover is what a real device does: how fast `adb input` really
 types, a UI dump that fails mid-transition, the screen recorder, the emulator
