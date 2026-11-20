@@ -173,7 +173,12 @@ A run like that measures how the app handles a missing recipe, not the task the
 persona was written for, and its `not_met` says nothing about the task. Read a
 `demo` persona's needs against `state-before.md` before you read its outcome.
 The fix is in the config, not the engine: a state description that names what
-the library holds.
+the library holds. KeepTaste's config has had one since 2026-11-20 (four
+cookbooks, 14 recipes, which of them have photos;
+[Maleckidd/KeepTaste#27](https://github.com/Maleckidd/KeepTaste/pull/27)). No
+session has run on it yet, so whether the generator keeps to the list is
+unmeasured. The engine still cannot check a need against the start state; a
+config without such a list has the same problem.
 
 ### Under a CLI login, the persona also gets the CLI's own context
 
