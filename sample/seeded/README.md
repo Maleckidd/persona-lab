@@ -68,7 +68,8 @@
 Session `20261118-141442`, engine `ddb4ab8`, the seeded build reporting itself
 as 1.3.3. Six runs, none skipped, none tainted. 1 h 35 min wall clock; $2.20
 for the runs, about $5.50 with the persona generator, the synthesis and the
-scoring.
+scoring. The session's isolation check passed: [`isolation.md`](isolation.md)
+(linked on 2026-11-20, when it was published).
 
 **Recall: 3 of 4 reached defects reported, 0.75.** `recall_with_noticed` is
 the same, 0.75: nothing was seen in the turn notes and left out of a report.

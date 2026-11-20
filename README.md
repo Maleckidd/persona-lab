@@ -41,7 +41,7 @@ a way the result could be worthless, and what is done about it.
 
 | What could make the result worthless | Control | How the control is itself checked | Where it stands |
 |---|---|---|---|
-| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary before the personas run, unless `--skip-isolation` | positive control: the same probe with a Read tool allowed must leak the canary | passed in each published session — [sample](sample/isolation/session.md), [seeded](sample/seeded/isolation.md); the positive control ran on a deploy test — [its result](sample/isolation/isolation.md). The run does not record whether the check ran — [limitations](docs/limitations.md#nothing-records-whether-the-isolation-check-ran); under a CLI login the persona also gets the CLI's own context note — [limitations](docs/limitations.md#under-a-cli-login-the-persona-also-gets-the-clis-own-context) |
+| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary before the personas run, unless `--skip-isolation` | positive control: the same probe with a Read tool allowed must leak the canary | passed in both published sessions ([sample](sample/isolation/session.md), [seeded](sample/seeded/isolation.md)); the control leaks as it must ([deploy test](sample/isolation/isolation.md)). Not covered: [a skipped check leaves no trace](docs/limitations.md#nothing-records-whether-the-isolation-check-ran), and [under a CLI login the CLI adds its own context note](docs/limitations.md#under-a-cli-login-the-persona-also-gets-the-clis-own-context) |
 | the persona believes it succeeded and it did not | the engine reads the app's stored state before and after, and judges each need against it: `verified`, `overclaimed` | selftest cases; every alarm checked by hand | `underclaimed` has fired on real runs (the picture above). `overclaimed` never has — [limitations](docs/limitations.md#overclaimed-has-never-fired-on-a-real-contradiction) |
 | the host slept, a call hung, the rig mangled the typing | per-turn timing; the run is marked `tainted` and the suspect turns are named | selftest; replayed on the logs of an earlier session | 3 of 10 runs flagged in the sample session; [the synthesis throws one finding out because of it](sample/) |
 | the personas walk past what is wrong | recall on deliberately planted defects (`--seeded`) | the manifest is hidden from the personas and from the scoring input | one session: 3 of 4 reached defects reported, 2 never reached, every verdict checked by hand; six defects make it coarse — [the result](sample/seeded/README.md), [limitations](docs/limitations.md#recall-rests-on-one-session-and-four-defects) |
@@ -53,19 +53,25 @@ other not closed at all.
 outcome check does badly, what the rig still gets wrong, and what a session
 costs. Read it before you read a result.
 
-## One real session
+## Two real sessions
 
 **[`sample/`](sample/)** holds two runs of a real session against a published
 app, with screenshots, the state reads, the per-need verdicts and the synthesis
 — a clean case and a counter-example the synthesis rejects as a rig artifact.
-Nobody can reproduce a session from a clone, so that directory is the evidence.
+**[`sample/seeded/`](sample/seeded/README.md)** is a second session, on a build
+with six planted defects: what was written down before it ran, the recall it
+came out with, and every verdict checked by hand. A session needs a device, the
+app and a model, so it cannot be reproduced from a clone; these directories
+are the evidence.
 
 The tool was built for a Polish-language study, and what the engine writes
 stays in the language the study ran in: in `sample/` the synthesis, the ledger
 and every heading are in Polish, and so is one of the two personas. The other
 persona speaks English, the verdict fields (`verified`, `self_report`,
-`tainted`) read the same in any language, and `sample/README.md` works both
-runs through in English.
+`tainted`) read the same in any language, `sample/README.md` works both runs
+through in English, and
+[`sample/synthesis.en-key.md`](sample/synthesis.en-key.md) is an English key to
+the Polish synthesis.
 
 ## Running it
 
