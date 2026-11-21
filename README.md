@@ -30,7 +30,7 @@ each check has itself been tested.
 The engine was built against KeepTaste, a recipe manager published on Google
 Play ([repository](https://github.com/Maleckidd/KeepTaste),
 [Play listing](https://play.google.com/store/apps/details?id=com.damianmalecki.keeptaste));
-both sessions in `sample/` ran on it, and
+every session in `sample/` ran on it, and
 [`examples/keeptaste/`](examples/keeptaste/README.md) is a snapshot of its
 configs.
 
@@ -41,26 +41,29 @@ a way the result could be worthless, and what is done about it.
 
 | What could make the result worthless | Control | How the control is itself checked | Where it stands |
 |---|---|---|---|
-| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary before the personas run, unless `--skip-isolation` | positive control: the same probe with a Read tool allowed must leak the canary | passed in both published sessions ([sample](sample/isolation/session.md), [seeded](sample/seeded/isolation.md)); the control leaks as it must ([deploy test](sample/isolation/isolation.md)). Not covered: [a skipped check leaves no trace](docs/limitations.md#nothing-records-whether-the-isolation-check-ran), and [under a CLI login the CLI adds its own context note](docs/limitations.md#under-a-cli-login-the-persona-also-gets-the-clis-own-context) |
-| the persona believes it succeeded and it did not | the engine reads the app's stored state before and after, and judges each need against it: `verified`, `overclaimed` | selftest cases; every alarm checked by hand | `underclaimed` has fired on real runs (the picture above). `overclaimed` never has — [limitations](docs/limitations.md#overclaimed-has-never-fired-on-a-real-contradiction) |
+| the persona reads the app's source and "finds" what it was told | every persona call is tool-free, in an empty directory outside the repo; probed with a canary before the personas run, unless `--skip-isolation` | positive control: the same probe with a Read tool allowed must leak the canary | passed in all three published sessions ([sample](sample/isolation/session.md), [seeded](sample/seeded/isolation.md), [loop](sample/loop/isolation.md)); the control leaks as it must ([deploy test](sample/isolation/isolation.md)). Not covered: [a skipped check leaves no trace](docs/limitations.md#nothing-records-whether-the-isolation-check-ran), and [under a CLI login the CLI adds its own context note](docs/limitations.md#under-a-cli-login-the-persona-also-gets-the-clis-own-context) |
+| the persona believes it succeeded and it did not | the engine reads the app's stored state before and after, and judges each need against it: `verified`, `overclaimed` | selftest cases; every alarm checked by hand | `underclaimed` has fired on real runs (the picture above). `overclaimed` has fired once, falsely: the state read missed the recipe, and the alarm was overturned by hand — [limitations](docs/limitations.md#overclaimed-has-never-fired-on-a-real-contradiction) |
 | the host slept, a call hung, the rig mangled the typing | per-turn timing; the run is marked `tainted` and the suspect turns are named | selftest; replayed on the logs of an earlier session | 3 of 10 runs flagged in the sample session; [the synthesis throws one finding out because of it](sample/) |
 | the personas walk past what is wrong | recall on deliberately planted defects (`--seeded`) | the manifest is hidden from the personas and from the scoring input | one session: 3 of 4 reached defects reported, 2 never reached, every verdict checked by hand; six defects make it coarse — [the result](sample/seeded/README.md), [limitations](docs/limitations.md#recall-rests-on-one-session-and-four-defects) |
-| a fix is reported as holding and is not | the findings ledger: `fixed` → `verified` / `regressed` | selftest | **no loop closed yet** — [limitations](docs/limitations.md#no-closed-loop-in-the-ledger) |
+| a fix is reported as holding and is not | the findings ledger: `fixed` → `verified` / `regressed` | selftest; checked by hand on the one real loop | closed once: two P1 fixes `verified` by a later session with the same personas, the fixed behaviour on screen in each ([the loop](sample/loop/README.md)); one session's silence is weak evidence — [limitations](docs/limitations.md#the-ledger-has-closed-once) |
 
 The last two rows are the thinnest: one measured once on four defects, the
-other not closed at all.
+other closed once on two fixes.
 **[docs/limitations.md](docs/limitations.md)** has the rest of the gaps: what the
 outcome check does badly, what the rig still gets wrong, and what a session
 costs. Read it before you read a result.
 
-## Two real sessions
+## Three real sessions
 
 **[`sample/`](sample/)** holds two runs of a real session against a published
 app, with screenshots, the state reads, the per-need verdicts and the synthesis
 — a clean case and a counter-example the synthesis rejects as a rig artifact.
 **[`sample/seeded/`](sample/seeded/README.md)** is a second session, on a build
 with six planted defects: what was written down before it ran, the recall it
-came out with, and every verdict checked by hand. A session needs a device, the
+came out with, and every verdict checked by hand.
+**[`sample/loop/`](sample/loop/README.md)** is a third, on the build with two
+of the first session's findings fixed: the ledger moving both to `verified`,
+the evidence for it, and what it does not prove. A session needs a device, the
 app and a model, so it cannot be reproduced from a clone; these directories
 are the evidence.
 
@@ -90,8 +93,9 @@ bash "$PERSONA_LAB_ENGINE/run.sh" persona-lab/config --count 1 --runs 1   # smok
 
 Needs macOS, `adb` with an emulator, `jq`, `perl`, `python3`, `ffmpeg`, and the
 `claude` CLI authenticated for non-interactive use. A full session on the
-example app took about 2 h of model time and $6.61, measured once; its wall
-clock was longer ([why](docs/limitations.md#cost-time-and-platform)). A smoke run has
+example app cost $6.61, and $6.68 the second time with the personas reused;
+each needed about 2 h of runs, and the wall clock was 14.5 h and 3 h
+([why](docs/limitations.md#cost-time-and-platform)). A smoke run has
 not been timed as a whole: one persona run in the
 [seeded session](sample/seeded/summary.json) took 7–12 min and $0.17–0.66,
 and the persona generator and the synthesis come on top.

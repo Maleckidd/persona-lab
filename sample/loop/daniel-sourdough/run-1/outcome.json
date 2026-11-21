@@ -1,0 +1,33 @@
+{
+  "verified": "partly",
+  "self_report": "consistent",
+  "needs_met": 0,
+  "needs_partly": 1,
+  "needs_not_met": 0,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Sourdough saved with sections, exact grams",
+      "verdict": "partly",
+      "claimed": true,
+      "evidence": "\"Levain (night before)\" / \"50 g active starter\" ... \"Dough\" / \"400 g strong white bread flour\" ... \"Method\" / \"Autolyse flour and 330 g water for ￼.\"",
+      "note": "Levain, Dough and Method are headed and all gram quantities are exact. But Levain and Dough are both under INGREDIENTS, and the bake is not its own section (it is step 5 of the Method). The degree signs were lost (26C, 250C), which is a minor point. The person claims it is done."
+    },
+    {
+      "need": "Rye variation kept among recipes to try",
+      "verdict": "unverifiable",
+      "claimed": true,
+      "evidence": "",
+      "note": "No To try or Tried it marker appears in the captured state, and the capture does not show a filter or status. The recipe is in the main list, but that does not show it is marked to try. Nothing here shows whether the status was set."
+    },
+    {
+      "need": "Big text and screen stays awake",
+      "verdict": "unverifiable",
+      "claimed": false,
+      "evidence": "",
+      "note": "Text size and screen wake lock are not stored in the captured state. The person themself said they could not confirm the screen stays awake."
+    }
+  ]
+}

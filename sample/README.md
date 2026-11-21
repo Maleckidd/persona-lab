@@ -125,6 +125,6 @@ from her sister. Any likeness to a real person is a coincidence.
 - the synthesis's own preamble, cut by hand after the session. Nothing else in
   it was changed.
 
-Also not here, because it does not exist yet: a ledger entry with a closed
-loop. See
-[`docs/limitations.md`](../docs/limitations.md).
+Two of this session's findings, F-010 and F-025, were later fixed, and a
+session with the same personas confirmed both fixes:
+[`loop/`](loop/README.md).

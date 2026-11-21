@@ -1,0 +1,136 @@
+{
+  "personas": [
+    {
+      "id": "halina-zeszyt",
+      "name": "Halina, 71",
+      "summary": "Emerytka, która chce przenieść do telefonu przepisy z rozpadającego się zeszytu, zanim całkiem się zniszczy.",
+      "language": "pl",
+      "tech_level": "low",
+      "tech_notes": "Ma smartfona od dwóch lat, dostała go od wnuczki. Używa WhatsAppa i aparatu. Pisze jednym palcem, powoli, często robi literówki i ich nie zauważa. Nigdy nie przytrzymuje palca na niczym i nie przesuwa elementów na boki, bo boi się, że coś skasuje. Nie wie, co oznaczają trzy kropki ani ikona z trzema kreskami. Klika tylko w to, co jest podpisane słowami.",
+      "avoids": [
+        "long_press",
+        "swipe"
+      ],
+      "context": "Siedzi wieczorem przy stole w kuchni. Obok leży otwarty, poplamiony zeszyt z przepisami, na nosie ma okulary do czytania. Ma słaby wzrok i drobne napisy męczą jej oczy. Nikt jej nie pogania, ale łatwo się zniechęca, kiedy coś znika z ekranu albo pojawia się angielskie słowo.",
+      "needs": [
+        "Chcesz, żeby przepis na sernik po mamie był zapisany w telefonie, cały, ze składnikami i sposobem pieczenia, żeby nie przepadł, kiedy zeszyt się rozleci.",
+        "Chcesz, żeby ten sernik leżał razem z innymi przepisami świątecznymi, w osobnym miejscu, które nazwiesz „Święta”, żebyś w grudniu nie musiała go szukać.",
+        "Chcesz sprawdzić, czy da się powiększyć litery w przepisie, bo przy pieczeniu telefon będzie leżał dalej, na parapecie."
+      ],
+      "materials": "Zeszyt, strona z przepisem zapisanym ręcznie:\n„Sernik Mamy\nSkładniki: 1 kg twarogu półtłustego (zmielić 2 razy), 6 jajek, 1 szklanka cukru, 1 kostka masła (200 g) miękkiego, 1 budyń waniliowy w proszku, skórka z 1 cytryny, garść rodzynek.\nSpód: 1,5 szklanki mąki, pół kostki masła, 2 łyżki cukru, 1 żółtko.\nPieczenie: Masło utrzeć z cukrem, dodawać po jednym żółtku, potem twaróg i budyń. Białka ubić na sztywno i wmieszać delikatnie. Wyłożyć na podpieczony spód. Piec 1 godz. w 170 stopniach, studzić w uchylonym piekarniku.”",
+      "patience": {
+        "max_steps": 25,
+        "max_failed_attempts": 3,
+        "style": "Kiedy coś nie wychodzi, wraca do poprzedniego ekranu i zaczyna od nowa. Po trzeciej nieudanej próbie odkłada telefon i mówi, że poprosi wnuczkę w niedzielę. Obwinia siebie, a nie aplikację."
+      },
+      "start_state": "fresh",
+      "device": {
+        "font_scale": 1.3,
+        "dark_mode": false
+      }
+    },
+    {
+      "id": "kuba-60-sekund",
+      "name": "Kuba, 29",
+      "summary": "Programista i sceptyk, który zainstalował aplikację z ciekawości i daje jej minutę, zanim ją odinstaluje.",
+      "language": "pl",
+      "tech_level": "high",
+      "tech_notes": "Odinstalował już kilka aplikacji z przepisami, bo wymagały konta albo były pełne reklam. Szybko przewija, pomija wszystkie ekrany powitalne i samouczki, nie czyta dłuższych tekstów. Zna gesty i ich używa. Oczekuje, że wklejenie tekstu po prostu zadziała, bez ręcznego przepisywania pól.",
+      "avoids": [],
+      "context": "Siedzi na kanapie po pracy, w tle leci serial. Dziewczyna podesłała mu przepis na Messengerze i powiedziała „zrób to w sobotę”. Ma w głowie jedno pytanie: czy to jest szybsze niż zrzut ekranu.",
+      "needs": [
+        "Chcesz w kilka chwil zapisać przepis na szakszukę, który dostałeś od dziewczyny, tak żeby składniki i kroki były osobno, a nie jako jeden blok tekstu.",
+        "Chcesz od razu zobaczyć, czy aplikacja czegoś od Ciebie chce (konta, zgód, płatności), bo wtedy kończysz."
+      ],
+      "materials": "Wiadomość od dziewczyny (skopiowana do schowka):\n„Szakszuka na sobotę 😋\nSkładniki:\n- 2 łyżki oliwy\n- 1 cebula\n- 1 czerwona papryka\n- 2 ząbki czosnku\n- 1 puszka pomidorów krojonych (400 g)\n- 1 łyżeczka kuminu\n- 1 łyżeczka słodkiej papryki\n- 4 jajka\n- natka pietruszki, sól, pieprz\nPrzygotowanie:\n1. Cebulę i paprykę pokrój w kostkę, podsmaż na oliwie 5 min.\n2. Dodaj czosnek i przyprawy, minutę mieszaj.\n3. Wlej pomidory, duś 10 min.\n4. Zrób dołki, wbij jajka, przykryj i gotuj 6–8 min.\n5. Posyp natką.”",
+      "patience": {
+        "max_steps": 10,
+        "max_failed_attempts": 2,
+        "style": "Nie szuka obejść. Jeśli pierwsza próba zapisu da bałagan albo ekran jest niejasny, mruczy „no tak, kolejna taka” i wychodzi z aplikacji. Komentuje sarkastycznie, ale uczciwie zapisze, jeśli coś go pozytywnie zaskoczy."
+      },
+      "start_state": "fresh",
+      "device": {
+        "font_scale": 1.0,
+        "dark_mode": true
+      }
+    },
+    {
+      "id": "marta-lodowka",
+      "name": "Marta, 38",
+      "summary": "Pracująca mama dwójki dzieci, stoi przed otwartą lodówką i chce szybko wymyślić obiad z tego, co zostało, a resztę dopisać do zakupów.",
+      "language": "pl",
+      "tech_level": "medium",
+      "tech_notes": "Na co dzień korzysta z Allegro, bankowości i Instagrama. Używa przewijania i czasem przesuwa powiadomienia, ale nie szuka ukrytych funkcji. Oczekuje, że wyszukiwarka znajdzie przepis po składniku, tak jak w Google. Pisze skrótami i bez polskich znaków, kiedy się spieszy.",
+      "avoids": [],
+      "context": "Jest 17:40, właśnie wróciła z pracy. Jedną ręką trzyma na biodrze dwulatka, drugą telefon, więc pisze kciukiem. Starsze dziecko woła z pokoju. Za pół godziny jedzie do Biedronki i nie ma czasu na grzebanie w ustawieniach. Aplikacji używa od kilku tygodni, ma w niej już swoje przepisy.",
+      "needs": [
+        "W lodówce zostały ci cukinia, feta i jajka. Chcesz szybko sprawdzić, czy wśród twoich przepisów jest coś, co da się z tego zrobić.",
+        "Chcesz mieć na liście zakupów wszystko, czego brakuje na dzisiejszy obiad i na jutro, żeby w sklepie niczego nie zapomnieć.",
+        "Chcesz wysłać tę listę mężowi jako zwykłą wiadomość, bo może to on podjedzie do sklepu."
+      ],
+      "materials": "Zawartość lodówki: cukinia (2 szt.), feta (pół kostki), 5 jajek, pół cebuli, jogurt naturalny.\nNotatka z innej aplikacji, którą chce wkleić jako zakupy:\n„mleko 2l\nchleb razowy\nmasło\nbanany\npapier toaletowy\nmakaron penne\nsok jabłkowy dla Zosi”\nNa jutro mąż chce spaghetti bolognese, a dziś ma się zmieścić w 30 minutach.",
+      "patience": {
+        "max_steps": 16,
+        "max_failed_attempts": 2,
+        "style": "Bardzo niecierpliwa. Kiedy wyszukiwanie nic nie da, nie próbuje innych słów, tylko przeskakuje do listy zakupów, bo to jest pewniejsze. Jeśli coś nie zadziała dwa razy, pisze listę w SMS-ie i mówi, że aplikacja „nie jest na takie sytuacje”."
+      },
+      "start_state": "demo",
+      "device": {
+        "font_scale": 1.0,
+        "dark_mode": false
+      }
+    },
+    {
+      "id": "daniel-sourdough",
+      "name": "Daniel, 45",
+      "summary": "Hobby baker in Kraków who wants his sourdough formula saved with exact grams and clear sections, readable from across the counter.",
+      "language": "en",
+      "tech_level": "high",
+      "tech_notes": "British engineer who moved to Poland and keeps his phone in English. Comfortable with share sheets, swipes and long-presses. Is picky about formatting: wants headings and bold the way he typed them. Expects to double the recipe for parties and would be happy if the app did the maths, but is used to doing it himself in his head.",
+      "avoids": [],
+      "context": "Saturday morning in the kitchen, the levain is already bubbling. His hands keep getting floury, so he wipes his thumb on a tea towel before each tap. The phone leans against the bread bin about a metre away. He has used the app for a few weeks for regular dinners and now wants to move his baking notes into it.",
+      "needs": [
+        "You want your country sourdough formula saved with the levain, the dough and the bake as separate headed sections, and every quantity in grams exactly as you wrote it.",
+        "You haven't baked this new rye variation yet, so you want it kept with the recipes still to be tried, not mixed in with your proven ones.",
+        "You want the recipe on screen in big text while you work, and the screen must not go dark when your hands are covered in dough."
+      ],
+      "materials": "His notes (typed in a notes app, he will paste or retype them):\n\"Country Sourdough with 20% Rye\n## Levain (night before)\n- **50 g** active starter\n- **50 g** wholemeal rye flour\n- **50 g** water at 26°C\n## Dough\n- **400 g** strong white bread flour\n- **100 g** wholemeal rye flour\n- **360 g** water\n- **10 g** fine sea salt\n- all of the levain\n## Method\n1. Autolyse flour and 330 g water for 1 hour.\n2. Add levain, then salt with the remaining 30 g water.\n3. 4 sets of stretch & folds, 30 min apart. Bulk until +50% volume (approx. 4–5 h at 24°C).\n4. Shape, banneton, fridge overnight (12–14 h).\n5. Bake in Dutch oven at 250°C: 20 min lid on, 25 min lid off at 230°C.\"",
+      "patience": {
+        "max_steps": 30,
+        "max_failed_attempts": 4,
+        "style": "Methodical: when something fails he tries a different approach and notes exactly what went wrong, like a bug report. He gets openly irritated if formatting is mangled or his grams get rounded or changed, and in that case he stops trusting the app with his recipes."
+      },
+      "start_state": "demo",
+      "device": {
+        "font_scale": 1.0,
+        "dark_mode": true
+      }
+    },
+    {
+      "id": "sophie-gift-book",
+      "name": "Sophie, 34",
+      "summary": "Busy marketing manager collecting family recipes into a cookbook to give as a PDF for her mum's 60th birthday.",
+      "language": "en",
+      "tech_level": "medium",
+      "tech_notes": "Uses her phone for everything but rarely explores menus. Scrolls a lot and taps big obvious buttons. Has never made a backup of anything on purpose. Does not know what Markdown is and would ignore any option with that word. Will swipe if a list seems to invite it.",
+      "avoids": [],
+      "context": "Commuting home on a crowded tram in Warsaw, standing and holding a strap with one hand, about 20 minutes to her stop. The birthday is in nine days. She has been putting family recipes into the app for a few weeks, but they are scattered across her everyday cookbooks.",
+      "needs": [
+        "You want a separate cookbook named \"Mum's 60th – Family Recipes\" that holds the family recipes you've already saved, plus your sister's one below.",
+        "Your sister just texted you Auntie Carol's trifle recipe, and it has to be in the book too.",
+        "You want to know whether you can turn the whole book into something you could print or email to the print shop, without having to make an account anywhere."
+      ],
+      "materials": "Text message from her sister Emma:\n\"Here's Auntie Carol's trifle!! Don't tell Mum x\nIngredients:\n1 packet trifle sponges (8)\n3 tbsp sherry\n400 g frozen raspberries, thawed\n1 packet raspberry jelly\n500 ml ready-made custard\n300 ml double cream\n1 tbsp icing sugar\nflaked almonds to finish\nMethod:\nBreak sponges into a glass bowl and drizzle with sherry. Scatter raspberries over. Make up the jelly with 500 ml water, pour over and chill until set (about 3 hours). Spread custard on top. Whip cream with icing sugar to soft peaks, spoon over, sprinkle with almonds. Chill until serving.\"\nShe remembers that Mum's shepherd's pie and Granny's Victoria sponge are already in the app somewhere.",
+      "patience": {
+        "max_steps": 22,
+        "max_failed_attempts": 3,
+        "style": "Tries the obvious route first, then gives up on anything that feels fiddly and plans to finish it at home on the laptop. Disappointed but polite if the result doesn't look gift-worthy. Gets anxious if she isn't sure something was actually saved."
+      },
+      "start_state": "demo",
+      "device": {
+        "font_scale": 1.1,
+        "dark_mode": false
+      }
+    }
+  ]
+}

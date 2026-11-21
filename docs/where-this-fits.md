@@ -66,9 +66,16 @@ The path a finding is meant to take:
    the code still does what was fixed, and the ledger says whether the fix
    helped the person it was made for.
 
-No finding has gone the whole way yet: the ledger holds only `open` findings
-([limitations](limitations.md#no-closed-loop-in-the-ledger)). This section gets
-a worked example once one has.
+F-010 went the whole way. On 2026-11-14 six of ten runs saved a recipe with
+no cookbook and could not find it afterwards; the synthesis traced it to the
+new-recipe screen and gave it P1. The fix opens a new recipe on its own view
+after saving, with an end-to-end test for that flow in the app
+([Maleckidd/KeepTaste#29](https://github.com/Maleckidd/KeepTaste/pull/29)), and
+the owner marked it `fixed`. On 2026-11-20 the same personas saved without a
+cookbook in three runs, each landed on the recipe, and the ledger moved it to
+`verified` ([`sample/loop/`](../sample/loop/README.md)). How much one such
+session proves is in
+[limitations](limitations.md#the-ledger-has-closed-once).
 
 ## Next to the other tests
 

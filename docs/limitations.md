@@ -8,7 +8,8 @@ real sessions against KeepTaste, not tests.
 A reviewer's short version: the engine is good at catching a persona that
 *gave up on work it actually finished*, and unproven at catching the opposite.
 How much it finds at all has been measured once, on six planted defects:
-3 of the 4 that somebody reached.
+3 of the 4 that somebody reached. The ledger has closed once: two fixes
+confirmed by a later session.
 
 ## The outcome check
 
@@ -42,10 +43,19 @@ not cosmetic: the same end state can flag a persona as wrong or not.
 ### `overclaimed` has never fired on a real contradiction
 
 The first rule flagged 2 of 2 runs falsely (iteration 11). The rule since then
-has flagged 0 of 20 real runs across iterations 12–14, and none of the 20
-should have been flagged, so nothing yet shows it can fire when it should. Only
-the selftest covers the positive case. The opposite direction has fired for
-real: `underclaimed` caught Kuba twice in the 2026-11-14 session, where the
+flagged 0 of 20 real runs across iterations 12–14, and none of the 20 should
+have been flagged. In the session of 2026-11-20 it fired once, and that was
+false too ([`sample/loop/`](../sample/loop/README.md)). Daniel saved his loaf
+and marked it "to try". The example config's state read takes the first screen
+of All recipes, ordered by last change, and a recipe marked "to try" sorts
+after the rest, so the read never reached it. His `state.md` is identical to
+`state-before.md`, and the judge saw no recipe. A screenshot shows it under
+the To try filter. The rule did what it should with what it was given. The
+state read is what failed, and the fix belongs in the config's
+`capture_state`; it has not been made. So nothing yet shows the rule can fire
+on a real contradiction, and the one real alarm had to be overturned by
+hand. Only the selftest covers the positive case. The opposite direction has
+fired for real: `underclaimed` caught Kuba twice in the 2026-11-14 session, where the
 recipe was saved correctly and he left unable to confirm it. Until an
 overclaim is caught in a real session, treat "no overclaim" as "not detected",
 not as "did not happen".
@@ -175,8 +185,9 @@ persona was written for, and its `not_met` says nothing about the task. Read a
 The fix is in the config, not the engine: a state description that names what
 the library holds. KeepTaste's config has had one since 2026-11-20 (four
 cookbooks, 14 recipes, which of them have photos;
-[Maleckidd/KeepTaste#27](https://github.com/Maleckidd/KeepTaste/pull/27)). No
-session has run on it yet, so whether the generator keeps to the list is
+[Maleckidd/KeepTaste#27](https://github.com/Maleckidd/KeepTaste/pull/27)). The
+one session since reused the personas of 2026-11-14 (`--personas-file`), so
+the generator has not been run with the list, and whether it keeps to it is
 unmeasured. The engine still cannot check a need against the start state; a
 config without such a list has the same problem.
 
@@ -199,6 +210,21 @@ in a temporary directory on a Mac, and the operator's e-mail address reaches
 the model on every persona turn. Whether `--bare`, used when
 `ANTHROPIC_API_KEY` is set, drops this note has not been checked.
 
+### A persona can be told something is on the clipboard when it is not
+
+The generator writes each persona's materials, and it can say where they are:
+Kuba's recipe comes as a message "copied to the clipboard". The engine can
+fill the clipboard (`clipboard_set`, `engine/lib/device.sh:63`), but only a
+config's setup calls it, and the example's normal study does not. In the
+session of 2026-11-20, Kuba's second run tried to paste, found the field
+empty and gave up (`not_met`). On 2026-11-14 he hit the same empty field and
+typed the recipe instead. Nothing flags it: the run is not `tainted`. Found by
+reading the run against `persona.json`.
+
+Read a `not_met` run that involves pasting against the persona's
+`materials`. Either the config puts on the clipboard what the materials say,
+or the materials must not claim it.
+
 ## What has not been measured
 
 ### Recall rests on one session and four defects
@@ -218,13 +244,23 @@ It answers "do the personas catch planted problems at all" with a yes. It does
 not answer what fraction of an app's real problems a session finds, and it
 says nothing about false alarms.
 
-### No closed loop in the ledger
+### The ledger has closed once
 
-The ledger carries 35 findings, all `open`. The `fixed` → `verified` and
-`fixed` → `regressed` transitions, which are the point of keeping it, are
-covered by the selftest only. The one real signal so far is weaker: an open
-finding (F-009, an ANR) came back in a later session in a new place.
-*This entry is replaced once a fix has been confirmed by a later session.*
+Two P1 findings from the session of 2026-11-14 were fixed in the app and
+marked `fixed`. The session of 2026-11-20 ran the same five personas on the
+fixed build, and the engine moved both to `verified`
+([`sample/loop/`](../sample/loop/README.md)). Each verdict was checked by hand
+against the screenshots: the fixed behaviour is on screen in three runs for
+F-010 and in two for F-025. `fixed` → `regressed` has not happened on a real
+session, and is covered by the selftest only.
+
+Two things weaken the transition as a signal. First, `not_reproduced` is the
+synthesis's judgment, a model's. Second, in the same session four findings
+nobody had fixed (F-009, F-024, F-014, F-008) did not come back either. One
+session's silence is the same weak signal whether or not a fix went in. What
+makes these two stronger is that the screenshots show the new behaviour, not
+only the old problem missing. And a fix can hold and still leave a problem:
+F-036, new in that session, is about the same switch F-025 moved.
 
 ### No calibration against real users
 
@@ -297,7 +333,9 @@ it.
 
 The 10-run session of 2026-11-14 cost **$6.61**: $4.10 the runs themselves,
 $2.51 the persona generator and the synthesis. It wrote 1.6 GB, almost all of
-it `video.webm`.
+it `video.webm`. The 10-run session of 2026-11-20 reused those personas and
+cost **$6.68**: $3.74 the runs, $2.94 the synthesis. It took 2 h 58 min of
+wall clock with the host awake, 2 h 3 min of it in the runs.
 
 Wall-clock time is not the same as work. That session needed about 2 h of
 model time and took 14.5 h, because the host's lid was closed for the night and

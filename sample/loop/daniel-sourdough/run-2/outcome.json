@@ -1,0 +1,33 @@
+{
+  "verified": "not_met",
+  "self_report": "overclaimed",
+  "needs_met": 0,
+  "needs_partly": 0,
+  "needs_not_met": 2,
+  "needs_contradicted": 2,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Save sourdough formula with sections in grams",
+      "verdict": "not_met",
+      "claimed": true,
+      "evidence": "",
+      "note": "The state after the session shows no Country Sourdough recipe; the recipe list and all books are unchanged from before. The person claims it was saved, but it is not in the captured state."
+    },
+    {
+      "need": "Keep rye recipe among to-try recipes",
+      "verdict": "not_met",
+      "claimed": true,
+      "evidence": "",
+      "note": "No new recipe exists in the state after the session, so nothing is marked 'to try'. The claim of confirming it under the To try filter is not reflected in the state."
+    },
+    {
+      "need": "Big text and screen stays awake",
+      "verdict": "unverifiable",
+      "claimed": false,
+      "evidence": "",
+      "note": "Text size and the keep-awake setting are display behaviours that a stored state does not show. The person also said they could not verify the screen staying awake."
+    }
+  ]
+}

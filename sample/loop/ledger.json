@@ -1,0 +1,133 @@
+[
+  {
+    "id": "F-010",
+    "kind": "problem",
+    "title": "Nowo zapisany przepis Bez książki jest niewidoczny po zapisie",
+    "priority": "P1",
+    "status": "verified",
+    "where": [
+      "app/recipe/new.tsx:94",
+      "app/recipe/new.tsx:98",
+      "components/ui/SnackbarProvider.tsx:54",
+      "app/(tabs)/index.tsx:255"
+    ],
+    "first_seen": "20261112-160835",
+    "last_seen": "20261114-200122",
+    "note": "d4fd23c (#29): a new recipe opens its own view after saving; the snackbar is no longer the only way to it",
+    "sightings": [
+      {
+        "session": "20261112-160835",
+        "version": "1.3.0",
+        "result": "reproduced",
+        "priority": "P2",
+        "runs": 2,
+        "personas": [
+          "halina-zeszyt-babci"
+        ],
+        "status_before": "open"
+      },
+      {
+        "session": "20261112-185244",
+        "version": "1.3.0",
+        "result": "reproduced",
+        "priority": "P2",
+        "runs": 4,
+        "personas": [
+          "oliver-sourdough-grams",
+          "kasia-ksiazka-na-prezent"
+        ],
+        "status_before": "open"
+      },
+      {
+        "session": "20261114-200122",
+        "version": "1.3.1",
+        "result": "reproduced",
+        "priority": "P1",
+        "runs": 6,
+        "personas": [
+          "halina-zeszyt",
+          "kuba-60-sekund",
+          "daniel-sourdough"
+        ],
+        "status_before": "open"
+      },
+      {
+        "session": "20261120-235625",
+        "version": "1.3.3",
+        "result": "not_reproduced",
+        "priority": null,
+        "runs": null,
+        "personas": [],
+        "status_before": "fixed"
+      }
+    ],
+    "status_changed": "2026-11-20",
+    "status_changed_at": "20261120-185055"
+  },
+  {
+    "id": "F-025",
+    "kind": "problem",
+    "title": "Przełącznik Do wypróbowania schowany na dnie formularza, brak w menu przepisu",
+    "priority": "P1",
+    "status": "verified",
+    "where": [
+      "components/recipe/RecipeForm.tsx:457",
+      "app/recipe/[id].tsx:266",
+      "app/cookbook/[id].tsx:412"
+    ],
+    "first_seen": "20261114-200122",
+    "last_seen": "20261114-200122",
+    "note": "c86c460 (#28): the To try switch sits under Cookbook in the form; Mark/Unmark to try in the recipe menu",
+    "sightings": [
+      {
+        "session": "20261114-200122",
+        "version": "1.3.1",
+        "result": "reproduced",
+        "priority": "P1",
+        "runs": 2,
+        "personas": [
+          "daniel-sourdough"
+        ],
+        "status_before": "open"
+      },
+      {
+        "session": "20261120-235625",
+        "version": "1.3.3",
+        "result": "not_reproduced",
+        "priority": null,
+        "runs": null,
+        "personas": [],
+        "status_before": "fixed"
+      }
+    ],
+    "status_changed": "2026-11-20",
+    "status_changed_at": "20261120-185055"
+  },
+  {
+    "id": "F-036",
+    "kind": "problem",
+    "title": "Stan „do wypróbowania” nieczytelny w formularzu i w widoku przepisu",
+    "priority": "P2",
+    "status": "open",
+    "where": [
+      "components/recipe/RecipeForm.tsx:380",
+      "app/recipe/[id].tsx:339"
+    ],
+    "first_seen": "20261120-235625",
+    "last_seen": "20261120-235625",
+    "note": "",
+    "sightings": [
+      {
+        "session": "20261120-235625",
+        "version": "1.3.3",
+        "result": "reproduced",
+        "priority": "P2",
+        "runs": 1,
+        "personas": [
+          "daniel-sourdough"
+        ],
+        "status_before": "open"
+      }
+    ]
+  }
+]

@@ -1,0 +1,26 @@
+{
+  "verified": "met",
+  "self_report": "consistent",
+  "needs_met": 1,
+  "needs_partly": 0,
+  "needs_not_met": 0,
+  "needs_contradicted": 0,
+  "expect_failed": 0,
+  "expect": [],
+  "needs": [
+    {
+      "need": "Zapisać przepis na szakszukę ze składnikami i krokami osobno",
+      "verdict": "met",
+      "claimed": true,
+      "evidence": "SKŁADNIKI: \"2 lyzki oliwy / 1 cebula / ... / natka pietruszki, sol, pieprz\"; PRZYGOTOWANIE: \"1. Cebule i papryke pokroj w kostke, podsmaz na oliwie ￼. 5 min\" ... \"5. Posyp natka.\"",
+      "note": "Wszystkie 9 składników i 5 kroków obecne, tytuł poprawny, bez brakujących elementów. Brak polskich znaków wynika z klawiatury testowej i nie jest błędem. Czasy (5 min, 10 min, 6-8 min) trafiły do osobnych liczników kroków, co jest poprawne."
+    },
+    {
+      "need": "Od razu zobaczyć, czy aplikacja wymaga konta, zgód lub płatności",
+      "verdict": "unverifiable",
+      "claimed": true,
+      "evidence": "",
+      "note": "Zapisany stan nie pokazuje, czy aplikacja żądała konta, zgód lub płatności. Brak takich ekranów w stanie końcowym nie dowodzi, że ich nie było, a sama potrzeba dotyczy tego, co użytkownik zobaczył na początku."
+    }
+  ]
+}
